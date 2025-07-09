@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import ChatbotDesigner from '@/components/ChatbotDesigner';
 import SavedChatbots from '@/components/SavedChatbots';
-import AppwriteConfig from '@/components/AppwriteConfig';
 import { ChatbotConfig } from '@/types/chatbot';
 
 export default function Home() {
@@ -46,7 +45,6 @@ export default function Home() {
               >
                 Demo
               </Button>
-              <AppwriteConfig />
             </div>
           </div>
         </div>
