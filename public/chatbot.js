@@ -14,10 +14,18 @@
         async init() {
             try {
                 // Design-Daten laden
-                const response = await fetch(`${this.apiUrl}/${this.chatbotId}`);
+                const response = await fetch(`${this.apiUrl}/${this.chatbotId}`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
                 if (!response.ok) {
-                    throw new Error('Chatbot Design nicht gefunden');
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
+
                 this.design = await response.json();
 
                 // Widget erstellen
@@ -25,6 +33,33 @@
                 this.attachEventListeners();
             } catch (error) {
                 console.error('Fehler beim Laden des Chatbots:', error);
+
+                // Fallback: Verwende Standard-Design wenn API nicht erreichbar
+                this.design = {
+                    id: this.chatbotId,
+                    name: 'Chatbot',
+                    design: {
+                        colors: {
+                            primary: '#3b82f6',
+                            secondary: '#1e40af',
+                            background: '#ffffff',
+                            text: '#1f2937',
+                            border: '#e5e7eb'
+                        },
+                        size: {
+                            width: '400px',
+                            height: '600px'
+                        },
+                        borderRadius: '12px',
+                        position: 'bottom-right',
+                        fontFamily: 'Inter, sans-serif',
+                        shadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+                    }
+                };
+
+                // Widget trotzdem erstellen
+                this.createWidget();
+                this.attachEventListeners();
             }
         }
 
