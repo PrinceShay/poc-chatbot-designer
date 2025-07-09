@@ -55,8 +55,8 @@ export async function getChatbot(id: string) {
             DATABASE_ID,
             COLLECTION_ID,
             [
-                // Filter nach der ID
-                `id=${id}`
+                // Filter nach der ID - korrekte Appwrite-Syntax
+                `id.equal("${id}")`
             ]
         );
 
