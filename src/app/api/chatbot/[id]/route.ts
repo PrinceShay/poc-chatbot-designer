@@ -7,14 +7,11 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        console.log('Suche Chatbot mit ID:', id);
 
         // Lade aus Appwrite
         const chatbot = await getChatbot(id);
-        console.log('Appwrite Ergebnis:', chatbot);
 
         if (!chatbot) {
-            console.log('Chatbot nicht gefunden');
             return NextResponse.json(
                 { error: 'Chatbot nicht gefunden' },
                 {
@@ -28,7 +25,6 @@ export async function GET(
             );
         }
 
-        console.log('Chatbot gefunden:', chatbot);
         return NextResponse.json(chatbot, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -59,13 +55,11 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
-        console.log('API: Lösche Chatbot mit ID:', id);
 
         // Chatbot aus Appwrite löschen
         const result = await deleteChatbotById(id);
 
         if (!result.success) {
-            console.log('API: Fehler beim Löschen:', result.error);
             return NextResponse.json(
                 { error: result.error || 'Fehler beim Löschen' },
                 {
@@ -79,7 +73,6 @@ export async function DELETE(
             );
         }
 
-        console.log('API: Chatbot erfolgreich gelöscht');
         return NextResponse.json({ success: true, message: 'Chatbot erfolgreich gelöscht' }, {
             headers: {
                 'Access-Control-Allow-Origin': '*',

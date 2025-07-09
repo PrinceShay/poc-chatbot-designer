@@ -20,7 +20,6 @@ export default function SavedChatbotsPage() {
         const response = await fetch('/api/chatbot');
         if (response.ok) {
           const data = await response.json();
-          console.log('Geladene Chatbots:', data);
           setChatbots(data.chatbots || []);
         } else {
           console.error('Fehler beim Laden:', response.status, response.statusText);

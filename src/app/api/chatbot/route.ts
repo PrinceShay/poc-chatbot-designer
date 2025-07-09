@@ -44,11 +44,10 @@ export async function POST(request: NextRequest) {
     }
 }
 
+// GET Handler für alle Chatbots
 export async function GET() {
     try {
-        console.log('Lade alle Chatbots...');
         const chatbots = await getAllChatbots();
-        console.log('Geladene Chatbots:', chatbots);
 
         return NextResponse.json({ chatbots }, {
             headers: {
@@ -58,9 +57,9 @@ export async function GET() {
             }
         });
     } catch (error) {
-        console.error('Fehler beim Laden der Chatbots:', error);
+        console.error('Fehler beim Laden aller Chatbots:', error);
         return NextResponse.json(
-            { error: 'Fehler beim Laden der Chatbots' },
+            { error: 'Interner Server-Fehler' },
             {
                 status: 500,
                 headers: {
