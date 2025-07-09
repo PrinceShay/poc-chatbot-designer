@@ -16,10 +16,11 @@ import { chatbotTemplates } from '@/data/chatbot-templates';
 
 interface ChatbotDesignerProps {
   onSave?: (config: ChatbotConfig) => void;
+  editChatbot?: ChatbotConfig & { documentId?: string };
 }
 
-export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
-  const [design, setDesign] = useState<ChatbotDesign>({
+export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesignerProps) {
+  const [design, setDesign] = useState<ChatbotDesign>(editChatbot?.design || {
     colors: {
       primary: '#3b82f6',
       secondary: '#1e40af',
@@ -64,9 +65,10 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
     zIndex: 1000
   });
 
-  const [name, setName] = useState('Mein Chatbot');
+  const [name, setName] = useState(editChatbot?.name || 'Mein Chatbot');
   const [generatedScript, setGeneratedScript] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(editChatbot?.template || '');
+  const [chatbotId, setChatbotId] = useState(editChatbot?.id || `chatbot-${Date.now()}`);
 
   const updateDesign = (updates: Partial<ChatbotDesign>) => {
     setDesign(prev => ({ ...prev, ...updates }));
@@ -111,14 +113,13 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
 
   const generateScript = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    const chatbotId = `chatbot-${Date.now()}`;
     const script = `<script src="${baseUrl}/chatbot.js" data-chatbot-id="${chatbotId}"></script>`;
     setGeneratedScript(script);
   };
 
   const handleSave = async () => {
     const config: ChatbotConfig = {
-      id: `chatbot-${Date.now()}`,
+      id: chatbotId,
       name,
       design,
       template: selectedTemplate
@@ -135,7 +136,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
       
       if (response.ok) {
         onSave?.(config);
-        alert('Chatbot erfolgreich gespeichert!');
+        alert(editChatbot ? 'Chatbot erfolgreich aktualisiert!' : 'Chatbot erfolgreich gespeichert!');
         // Generiere automatisch das Script mit der gespeicherten ID
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
         const script = `<script src="${baseUrl}/chatbot.js" data-chatbot-id="${config.id}"></script>`;

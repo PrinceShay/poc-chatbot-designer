@@ -208,6 +208,15 @@ export default function SavedChatbotsPage() {
                     </DialogContent>
                   </Dialog>
                   
+                  <Link href={`/?edit=${chatbot.id}`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                    >
+                      Bearbeiten
+                    </Button>
+                  </Link>
+                  
                   <Button
                     variant="destructive"
                     size="sm"

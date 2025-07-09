@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getChatbot, deleteChatbotById } from '@/lib/appwrite';
-import chatbotDesigns from '@/data/chatbot-designs.json';
-import { ChatbotDesigns, ChatbotConfig } from '@/types/chatbot';
+import { ChatbotConfig } from '@/types/chatbot';
 
 export async function GET(
     request: NextRequest,
@@ -11,23 +10,12 @@ export async function GET(
         const { id } = await params;
         console.log('Suche Chatbot mit ID:', id);
 
-        // Erst versuchen, aus Appwrite zu laden
+        // Lade aus Appwrite
         let chatbot = await getChatbot(id);
         console.log('Appwrite Ergebnis:', chatbot);
 
-        // Falls nicht in Appwrite, aus JSON-Datei laden (Fallback)
         if (!chatbot) {
-            console.log('Nicht in Appwrite gefunden, versuche JSON...');
-            const designs = chatbotDesigns as ChatbotDesigns;
-            const jsonChatbot = designs.chatbots[id];
-            if (jsonChatbot) {
-                chatbot = jsonChatbot as ChatbotConfig & { documentId?: string };
-            }
-            console.log('JSON Ergebnis:', chatbot);
-        }
-
-        if (!chatbot) {
-            console.log('Chatbot nirgendwo gefunden');
+            console.log('Chatbot nicht gefunden');
             return NextResponse.json(
                 { error: 'Chatbot nicht gefunden' },
                 {
