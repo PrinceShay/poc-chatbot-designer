@@ -93,6 +93,37 @@ export async function getAllChatbots() {
     }
 }
 
+// Chatbot aktualisieren
+export async function updateChatbot(chatbotId: string, chatbotData: any) {
+    try {
+        // Erst den Chatbot finden, um die documentId zu bekommen
+        const existingChatbot = await getChatbot(chatbotId);
+
+        if (!existingChatbot || !existingChatbot.documentId) {
+            return { success: false, error: 'Chatbot nicht gefunden' };
+        }
+
+        // Chatbot in Appwrite aktualisieren
+        await databases.updateDocument(
+            DATABASE_ID,
+            COLLECTION_ID,
+            existingChatbot.documentId,
+            {
+                id: chatbotData.id,
+                name: chatbotData.name,
+                design: JSON.stringify(chatbotData.design),
+                template: chatbotData.template || '',
+                updated_at: new Date().toISOString(),
+            }
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error('Appwrite: Fehler beim Aktualisieren:', error);
+        return { success: false, error };
+    }
+}
+
 // Chatbot anhand benutzerdefinierter ID löschen
 export async function deleteChatbotById(chatbotId: string) {
     try {

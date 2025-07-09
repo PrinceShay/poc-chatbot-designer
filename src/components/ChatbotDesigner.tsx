@@ -126,8 +126,11 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
     };
     
     try {
-      const response = await fetch('/api/chatbot', {
-        method: 'POST',
+      const method = editChatbot ? 'PUT' : 'POST';
+      const url = editChatbot ? `/api/chatbot/${chatbotId}` : '/api/chatbot';
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },

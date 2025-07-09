@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getChatbot, deleteChatbotById } from '@/lib/appwrite';
+import { getChatbot, deleteChatbotById, updateChatbot } from '@/lib/appwrite';
 
 export async function GET(
     request: NextRequest,
@@ -84,6 +84,55 @@ export async function DELETE(
         console.error('API: Fehler beim Löschen:', error);
         return NextResponse.json(
             { error: 'Interner Server-Fehler beim Löschen' },
+            {
+                status: 500,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                }
+            }
+        );
+    }
+}
+
+// PUT Handler für das Aktualisieren von Chatbots
+export async function PUT(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const chatbotData = await request.json();
+
+        // Chatbot in Appwrite aktualisieren
+        const result = await updateChatbot(id, chatbotData);
+
+        if (!result.success) {
+            return NextResponse.json(
+                { error: result.error || 'Fehler beim Aktualisieren' },
+                {
+                    status: 400,
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    }
+                }
+            );
+        }
+
+        return NextResponse.json({ success: true, message: 'Chatbot erfolgreich aktualisiert' }, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            }
+        });
+    } catch (error) {
+        console.error('API: Fehler beim Aktualisieren:', error);
+        return NextResponse.json(
+            { error: 'Interner Server-Fehler beim Aktualisieren' },
             {
                 status: 500,
                 headers: {
