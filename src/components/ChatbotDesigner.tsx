@@ -111,7 +111,8 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
 
   const generateScript = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    const script = `<script src="${baseUrl}/chatbot.js" data-chatbot-id="YOUR_CHATBOT_ID"></script>`;
+    const chatbotId = `chatbot-${Date.now()}`;
+    const script = `<script src="${baseUrl}/chatbot.js" data-chatbot-id="${chatbotId}"></script>`;
     setGeneratedScript(script);
   };
 
@@ -135,6 +136,10 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
       if (response.ok) {
         onSave?.(config);
         alert('Chatbot erfolgreich gespeichert!');
+        // Generiere automatisch das Script mit der gespeicherten ID
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+        const script = `<script src="${baseUrl}/chatbot.js" data-chatbot-id="${config.id}"></script>`;
+        setGeneratedScript(script);
       } else {
         alert('Fehler beim Speichern des Chatbots.');
       }
@@ -189,7 +194,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
         <p className="text-gray-600">Erstelle deinen eigenen Chatbot mit individuellem Design</p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
         {/* Designer Panel */}
         <div className="xl:col-span-2 space-y-6">
           <Tabs defaultValue="basics" className="w-full">
