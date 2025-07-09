@@ -9,8 +9,8 @@ const client = new Client()
 const databases = new Databases(client);
 
 // Konfiguration
-const DATABASE_ID = 'chatbot_designer';
-const COLLECTION_ID = 'chatbots';
+const DATABASE_ID = '686e31d30004f08e891e';
+const COLLECTION_ID = '686e31e2000587fb6636';
 
 // Appwrite Client initialisieren (für dynamische Konfiguration)
 export function initAppwrite(projectId?: string, endpoint?: string) {
