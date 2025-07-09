@@ -94,7 +94,7 @@ export async function getAllChatbots() {
 }
 
 // Chatbot aktualisieren
-export async function updateChatbot(chatbotId: string, chatbotData: any) {
+export async function updateChatbot(chatbotId: string, chatbotData: ChatbotConfig) {
     try {
         // Erst den Chatbot finden, um die documentId zu bekommen
         const existingChatbot = await getChatbot(chatbotId);
