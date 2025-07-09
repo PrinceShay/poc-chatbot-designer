@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv';
+import { ChatbotConfig } from '@/types/chatbot';
 
-export async function saveChatbot(chatbot: any) {
+export async function saveChatbot(chatbot: ChatbotConfig) {
     try {
         await kv.set(`chatbot:${chatbot.id}`, chatbot);
         return { success: true };

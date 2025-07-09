@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
                 }
             );
         }
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Ungültige Anfrage' },
             {
@@ -55,7 +55,7 @@ export async function GET() {
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             }
         });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Fehler beim Laden der Chatbots' },
             {
