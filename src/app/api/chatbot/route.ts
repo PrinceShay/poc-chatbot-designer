@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { saveChatbot, getAllChatbots } from '@/lib/kv';
+import { saveChatbot, getAllChatbots } from '@/lib/appwrite';
 import { ChatbotConfig } from '@/types/chatbot';
 
 export async function POST(request: NextRequest) {

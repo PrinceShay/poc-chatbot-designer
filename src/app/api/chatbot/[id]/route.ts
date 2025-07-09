@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getChatbot } from '@/lib/kv';
+import { getChatbot } from '@/lib/appwrite';
 import chatbotDesigns from '@/data/chatbot-designs.json';
 import { ChatbotDesigns } from '@/types/chatbot';
 
@@ -10,10 +10,10 @@ export async function GET(
     try {
         const { id } = await params;
 
-        // Erst versuchen, aus KV (Redis) zu laden
+        // Erst versuchen, aus Appwrite zu laden
         let chatbot = await getChatbot(id);
 
-        // Falls nicht in KV, aus JSON-Datei laden (Fallback)
+        // Falls nicht in Appwrite, aus JSON-Datei laden (Fallback)
         if (!chatbot) {
             const designs = chatbotDesigns as ChatbotDesigns;
             chatbot = designs.chatbots[id];

@@ -67,7 +67,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
     };
     
     try {
-      // Speichere in KV (Redis)
+      // Speichere in Appwrite
       const response = await fetch('/api/chatbot', {
         method: 'POST',
         headers: {

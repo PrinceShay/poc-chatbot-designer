@@ -15,7 +15,7 @@ export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps
   const [allChatbots, setAllChatbots] = useState<ChatbotConfig[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Lade alle Chatbots aus KV beim Mount
+  // Lade alle Chatbots aus Appwrite beim Mount
   useEffect(() => {
     const loadChatbots = async () => {
       try {
