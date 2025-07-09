@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from 'appwrite';
+import { Client, Databases, ID, Query } from 'appwrite';
 import { ChatbotConfig } from '@/types/chatbot';
 
 // Appwrite Konfiguration aus Umgebungsvariablen
@@ -56,7 +56,7 @@ export async function getChatbot(id: string) {
             COLLECTION_ID,
             [
                 // Filter nach der ID - korrekte Appwrite-Syntax
-                `id.equal("${id}")`
+                Query.equal("id", id)
             ]
         );
 
