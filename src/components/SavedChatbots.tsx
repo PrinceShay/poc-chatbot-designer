@@ -14,7 +14,9 @@ export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps
   // selectedChatbot entfernt, da nicht verwendet
 
   const generateScript = (chatbotId: string) => {
-    return `<script src="/chatbot.js" data-chatbot-id="${chatbotId}"></script>`;
+    // Verwende die aktuelle Domain für das Script
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    return `<script src="${baseUrl}/chatbot.js" data-chatbot-id="${chatbotId}"></script>`;
   };
 
   const copyToClipboard = (text: string) => {

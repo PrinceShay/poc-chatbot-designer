@@ -46,7 +46,7 @@ export default function DemoPage() {
               <h3 className="font-semibold text-blue-900">Modern Blue Chatbot</h3>
               <p className="text-sm text-blue-700">
                 Script: <code className="bg-blue-100 px-2 py-1 rounded text-xs">
-                  &lt;script src=&quot;/chatbot.js&quot; data-chatbot-id=&quot;chatbot-1&quot;&gt;&lt;/script&gt;
+                  &lt;script src=&quot;https://dein-projekt.vercel.app/chatbot.js&quot; data-chatbot-id=&quot;chatbot-1&quot;&gt;&lt;/script&gt;
                 </code>
               </p>
             </div>
@@ -55,7 +55,7 @@ export default function DemoPage() {
               <h3 className="font-semibold text-green-900">Dark Theme Chatbot</h3>
               <p className="text-sm text-green-700">
                 Script: <code className="bg-green-100 px-2 py-1 rounded text-xs">
-                  &lt;script src=&quot;/chatbot.js&quot; data-chatbot-id=&quot;chatbot-2&quot;&gt;&lt;/script&gt;
+                  &lt;script src=&quot;https://dein-projekt.vercel.app/chatbot.js&quot; data-chatbot-id=&quot;chatbot-2&quot;&gt;&lt;/script&gt;
                 </code>
               </p>
             </div>
@@ -64,7 +64,7 @@ export default function DemoPage() {
               <h3 className="font-semibold text-gray-900">Minimalist Chatbot</h3>
               <p className="text-sm text-gray-700">
                 Script: <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                  &lt;script src=&quot;/chatbot.js&quot; data-chatbot-id=&quot;chatbot-3&quot;&gt;&lt;/script&gt;
+                  &lt;script src=&quot;https://dein-projekt.vercel.app/chatbot.js&quot; data-chatbot-id=&quot;chatbot-3&quot;&gt;&lt;/script&gt;
                 </code>
               </p>
             </div>

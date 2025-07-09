@@ -2,9 +2,10 @@
     'use strict';
 
     class ChatbotWidget {
-        constructor(chatbotId, apiUrl = '/api/chatbot') {
+        constructor(chatbotId, apiUrl) {
             this.chatbotId = chatbotId;
-            this.apiUrl = apiUrl;
+            // Verwende die aktuelle Domain für die API
+            this.apiUrl = apiUrl || window.location.origin + '/api/chatbot';
             this.isOpen = false;
             this.design = null;
             this.init();
@@ -256,7 +257,7 @@
         const scripts = document.querySelectorAll('script[data-chatbot-id]');
         scripts.forEach(script => {
             const chatbotId = script.getAttribute('data-chatbot-id');
-            const apiUrl = script.getAttribute('data-api-url') || '/api/chatbot';
+            const apiUrl = script.getAttribute('data-api-url') || window.location.origin + '/api/chatbot';
             if (chatbotId) {
                 new ChatbotWidget(chatbotId, apiUrl);
             }

@@ -53,7 +53,9 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
   };
 
   const generateScript = () => {
-    const script = `<script src="/chatbot.js" data-chatbot-id="YOUR_CHATBOT_ID"></script>`;
+    // Verwende die aktuelle Domain für das Script
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const script = `<script src="${baseUrl}/chatbot.js" data-chatbot-id="YOUR_CHATBOT_ID"></script>`;
     setGeneratedScript(script);
   };
 
