@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         initAppwrite(finalProjectId, finalEndpoint);
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Fehler bei der Initialisierung' },
             { status: 500 }

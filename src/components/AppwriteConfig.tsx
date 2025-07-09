@@ -92,14 +92,14 @@ export default function AppwriteConfig() {
           
           <div className="text-sm text-gray-600">
             <p><strong>Schritte zur Einrichtung:</strong></p>
-            <ol className="list-decimal list-inside space-y-1 mt-2">
-              <li>Gehe zu <a href="https://cloud.appwrite.io" target="_blank" rel="noopener" className="text-blue-600 underline">cloud.appwrite.io</a></li>
-              <li>Erstelle ein neues Projekt</li>
-              <li>Kopiere die Project ID</li>
-              <li>Erstelle eine Datenbank namens "chatbot_designer"</li>
-              <li>Erstelle eine Collection namens "chatbots"</li>
-              <li>Füge die Attribute hinzu: id (string), name (string), design (string), created_at (string)</li>
-            </ol>
+                         <ol className="list-decimal list-inside space-y-1 mt-2">
+               <li>Gehe zu <a href="https://cloud.appwrite.io" target="_blank" rel="noopener" className="text-blue-600 underline">cloud.appwrite.io</a></li>
+               <li>Erstelle ein neues Projekt</li>
+               <li>Kopiere die Project ID</li>
+               <li>Erstelle eine Datenbank namens &quot;chatbot_designer&quot;</li>
+               <li>Erstelle eine Collection namens &quot;chatbots&quot;</li>
+               <li>Füge die Attribute hinzu: id (string), name (string), design (string), created_at (string)</li>
+             </ol>
           </div>
         </div>
       </DialogContent>
