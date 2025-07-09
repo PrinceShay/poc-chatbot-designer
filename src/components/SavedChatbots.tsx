@@ -22,7 +22,10 @@ export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps
         const response = await fetch('/api/chatbot');
         if (response.ok) {
           const data = await response.json();
+          console.log('Geladene Chatbots:', data);
           setAllChatbots(data.chatbots || []);
+        } else {
+          console.error('Fehler beim Laden:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Fehler beim Laden der Chatbots:', error);
@@ -163,7 +166,23 @@ export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => onDelete(chatbot.id)}
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/chatbot/${chatbot.id}`, {
+                        method: 'DELETE',
+                      });
+                      if (response.ok) {
+                        // Chatbot aus der lokalen Liste entfernen
+                        setAllChatbots(prev => prev.filter(c => c.id !== chatbot.id));
+                        onDelete(chatbot.id);
+                      } else {
+                        alert('Fehler beim Löschen des Chatbots');
+                      }
+                    } catch (error) {
+                      console.error('Fehler beim Löschen:', error);
+                      alert('Fehler beim Löschen des Chatbots');
+                    }
+                  }}
                 >
                   Löschen
                 </Button>

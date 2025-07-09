@@ -47,6 +47,10 @@ export async function saveChatbot(chatbot: ChatbotConfig) {
 // Chatbot anhand ID laden
 export async function getChatbot(id: string) {
     try {
+        console.log('Appwrite: Suche Chatbot mit ID:', id);
+        console.log('Appwrite: Database ID:', DATABASE_ID);
+        console.log('Appwrite: Collection ID:', COLLECTION_ID);
+
         const result = await databases.listDocuments(
             DATABASE_ID,
             COLLECTION_ID,
@@ -56,8 +60,12 @@ export async function getChatbot(id: string) {
             ]
         );
 
+        console.log('Appwrite: Gefundene Dokumente:', result.documents.length);
+        console.log('Appwrite: Alle Dokumente:', result.documents);
+
         if (result.documents.length > 0) {
             const doc = result.documents[0];
+            console.log('Appwrite: Gefundenes Dokument:', doc);
             return {
                 id: doc.id,
                 name: doc.name,
@@ -65,9 +73,10 @@ export async function getChatbot(id: string) {
             } as ChatbotConfig;
         }
 
+        console.log('Appwrite: Kein Chatbot gefunden');
         return null;
     } catch (error) {
-        console.error('Fehler beim Laden:', error);
+        console.error('Appwrite: Fehler beim Laden:', error);
         return null;
     }
 }

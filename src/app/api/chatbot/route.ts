@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
     try {
+        console.log('Lade alle Chatbots...');
         const chatbots = await getAllChatbots();
+        console.log('Geladene Chatbots:', chatbots);
 
         return NextResponse.json({ chatbots }, {
             headers: {
@@ -55,7 +57,8 @@ export async function GET() {
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             }
         });
-    } catch {
+    } catch (error) {
+        console.error('Fehler beim Laden der Chatbots:', error);
         return NextResponse.json(
             { error: 'Fehler beim Laden der Chatbots' },
             {
