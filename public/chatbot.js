@@ -4,8 +4,15 @@
     class ChatbotWidget {
         constructor(chatbotId, apiUrl) {
             this.chatbotId = chatbotId;
-            // Verwende die aktuelle Domain für die API
-            this.apiUrl = apiUrl || window.location.origin + '/api/chatbot';
+            // Verwende die aktuelle Domain für die API oder Fallback auf Vercel-URL
+            if (apiUrl) {
+                this.apiUrl = apiUrl;
+            } else if (window.location.origin && window.location.origin !== 'null') {
+                this.apiUrl = window.location.origin + '/api/chatbot';
+            } else {
+                // Fallback für lokale HTML-Dateien oder wenn origin null ist
+                this.apiUrl = 'https://poc-chatbot-designer.vercel.app/api/chatbot';
+            }
             this.isOpen = false;
             this.design = null;
             this.init();
@@ -292,7 +299,17 @@
         const scripts = document.querySelectorAll('script[data-chatbot-id]');
         scripts.forEach(script => {
             const chatbotId = script.getAttribute('data-chatbot-id');
-            const apiUrl = script.getAttribute('data-api-url') || window.location.origin + '/api/chatbot';
+            let apiUrl = script.getAttribute('data-api-url');
+
+            // Fallback für lokale HTML-Dateien
+            if (!apiUrl) {
+                if (window.location.origin && window.location.origin !== 'null') {
+                    apiUrl = window.location.origin + '/api/chatbot';
+                } else {
+                    apiUrl = 'https://poc-chatbot-designer.vercel.app/api/chatbot';
+                }
+            }
+
             if (chatbotId) {
                 new ChatbotWidget(chatbotId, apiUrl);
             }
