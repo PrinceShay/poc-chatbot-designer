@@ -6,10 +6,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { ChatbotConfig } from '@/types/chatbot';
 import Link from 'next/link';
+import { Label } from '@/components/ui/label';
 
 export default function SavedChatbotsPage() {
   const [chatbots, setChatbots] = useState<(ChatbotConfig & { documentId?: string })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Lade alle Chatbots aus Appwrite beim Mount
   useEffect(() => {
@@ -39,8 +41,14 @@ export default function SavedChatbotsPage() {
     return `<script src="${baseUrl}/chatbot.js" data-chatbot-id="${chatbotId}"></script>`;
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string, chatbotId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(chatbotId);
+      setTimeout(() => setCopiedId(null), 2000); // Reset nach 2 Sekunden
+    } catch (error) {
+      console.error('Fehler beim Kopieren:', error);
+    }
   };
 
   const handleDelete = async (chatbotId: string) => {
@@ -160,42 +168,41 @@ export default function SavedChatbotsPage() {
                         Script anzeigen
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-lg">
                       <DialogHeader>
                         <DialogTitle>Script für {chatbot.name}</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4">
-                        <Textarea
-                          value={generateScript(chatbot.id)}
-                          readOnly
-                          className="font-mono text-sm"
-                          rows={3}
-                        />
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-sm font-medium">Script-Code:</Label>
+                          <Textarea
+                            value={generateScript(chatbot.id)}
+                            readOnly
+                            className="font-mono text-sm mt-1"
+                            rows={1}
+                          />
+                        </div>
                         <Button
-                          onClick={() => copyToClipboard(generateScript(chatbot.id))}
+                          onClick={() => copyToClipboard(generateScript(chatbot.id), chatbot.id)}
                           className="w-full"
                         >
-                          In Zwischenablage kopieren
+                          {copiedId === chatbot.id ? '🎉 Kopiert!' : 'In Zwischenablage kopieren'}
                         </Button>
-                        <div className="text-sm text-gray-600">
-                          <p>Füge diesen Code in deine HTML-Seite ein:</p>
-                          <p className="mt-2">
-                            <strong>Beispiel:</strong>
-                          </p>
-                          <pre className="bg-gray-100 p-2 rounded text-xs mt-1">
-{`<!DOCTYPE html>
-<html>
-<head>
-    <title>Meine Seite</title>
-</head>
-<body>
-    <h1>Willkommen</h1>
-    <p>Hier ist mein Chatbot:</p>
-    
-    ${generateScript(chatbot.id)}
-</body>
-</html>`}
-                          </pre>
+                        <div className="text-xs text-gray-600">
+                          <p>Füge diesen Code in deine HTML-Seite ein.</p>
+                          <p className="mt-1 font-medium">Beispiel:</p>
+                          <div className="bg-gray-100 p-2 rounded mt-1 text-xs">
+                            <div>&lt;!DOCTYPE html&gt;</div>
+                            <div>&lt;html&gt;</div>
+                            <div>&lt;head&gt;</div>
+                            <div>&nbsp;&nbsp;&lt;title&gt;Meine Seite&lt;/title&gt;</div>
+                            <div>&lt;/head&gt;</div>
+                            <div>&lt;body&gt;</div>
+                            <div>&nbsp;&nbsp;&lt;h1&gt;Willkommen&lt;/h1&gt;</div>
+                            <div>&nbsp;&nbsp;{generateScript(chatbot.id)}</div>
+                            <div>&lt;/body&gt;</div>
+                            <div>&lt;/html&gt;</div>
+                          </div>
                         </div>
                       </div>
                     </DialogContent>
