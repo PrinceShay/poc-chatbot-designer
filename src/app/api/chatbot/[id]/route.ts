@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getChatbot } from '@/lib/appwrite';
+import { getChatbot, deleteChatbotById } from '@/lib/appwrite';
 import chatbotDesigns from '@/data/chatbot-designs.json';
-import { ChatbotDesigns } from '@/types/chatbot';
+import { ChatbotDesigns, ChatbotConfig } from '@/types/chatbot';
 
 export async function GET(
     request: NextRequest,
@@ -19,7 +19,10 @@ export async function GET(
         if (!chatbot) {
             console.log('Nicht in Appwrite gefunden, versuche JSON...');
             const designs = chatbotDesigns as ChatbotDesigns;
-            chatbot = designs.chatbots[id];
+            const jsonChatbot = designs.chatbots[id];
+            if (jsonChatbot) {
+                chatbot = jsonChatbot as ChatbotConfig & { documentId?: string };
+            }
             console.log('JSON Ergebnis:', chatbot);
         }
 
@@ -69,21 +72,38 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
+        console.log('API: Lösche Chatbot mit ID:', id);
 
-        // Hier könntest du eine Löschfunktion implementieren
-        // Für jetzt geben wir nur eine Erfolgsmeldung zurück
-        console.log('Chatbot löschen:', id);
+        // Chatbot aus Appwrite löschen
+        const result = await deleteChatbotById(id);
 
-        return NextResponse.json({ success: true }, {
+        if (!result.success) {
+            console.log('API: Fehler beim Löschen:', result.error);
+            return NextResponse.json(
+                { error: result.error || 'Fehler beim Löschen' },
+                {
+                    status: 400,
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    }
+                }
+            );
+        }
+
+        console.log('API: Chatbot erfolgreich gelöscht');
+        return NextResponse.json({ success: true, message: 'Chatbot erfolgreich gelöscht' }, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             }
         });
-    } catch {
+    } catch (error) {
+        console.error('API: Fehler beim Löschen:', error);
         return NextResponse.json(
-            { error: 'Fehler beim Löschen' },
+            { error: 'Interner Server-Fehler beim Löschen' },
             {
                 status: 500,
                 headers: {

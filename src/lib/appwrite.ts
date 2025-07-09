@@ -70,7 +70,8 @@ export async function getChatbot(id: string) {
                 id: doc.id,
                 name: doc.name,
                 design: JSON.parse(doc.design),
-            } as ChatbotConfig;
+                documentId: doc.$id, // Speichere die interne Appwrite-ID
+            } as ChatbotConfig & { documentId?: string };
         }
 
         console.log('Appwrite: Kein Chatbot gefunden');
@@ -93,14 +94,45 @@ export async function getAllChatbots() {
             id: doc.id,
             name: doc.name,
             design: JSON.parse(doc.design),
-        })) as ChatbotConfig[];
+            documentId: doc.$id, // Speichere die interne Appwrite-ID
+        })) as (ChatbotConfig & { documentId?: string })[];
     } catch (error) {
         console.error('Fehler beim Laden aller Chatbots:', error);
         return [];
     }
 }
 
-// Chatbot löschen
+// Chatbot anhand benutzerdefinierter ID löschen
+export async function deleteChatbotById(chatbotId: string) {
+    try {
+        console.log('Appwrite: Lösche Chatbot mit ID:', chatbotId);
+
+        // Erst den Chatbot finden, um die documentId zu bekommen
+        const chatbot = await getChatbot(chatbotId);
+
+        if (!chatbot || !chatbot.documentId) {
+            console.log('Appwrite: Chatbot nicht gefunden oder keine documentId');
+            return { success: false, error: 'Chatbot nicht gefunden oder kann nicht gelöscht werden' };
+        }
+
+        console.log('Appwrite: Lösche Dokument mit documentId:', chatbot.documentId);
+
+        // Jetzt das Dokument mit der internen ID löschen
+        await databases.deleteDocument(
+            DATABASE_ID,
+            COLLECTION_ID,
+            chatbot.documentId
+        );
+
+        console.log('Appwrite: Chatbot erfolgreich gelöscht');
+        return { success: true };
+    } catch (error) {
+        console.error('Appwrite: Fehler beim Löschen:', error);
+        return { success: false, error };
+    }
+}
+
+// Chatbot löschen (mit documentId - für direkte Löschung)
 export async function deleteChatbot(documentId: string) {
     try {
         await databases.deleteDocument(
