@@ -1,29 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getChatbot } from '@/lib/kv';
-import chatbotDesigns from '@/data/chatbot-designs.json';
-import { ChatbotDesigns } from '@/types/chatbot';
+import { saveChatbot, getAllChatbots } from '@/lib/kv';
+import { ChatbotConfig } from '@/types/chatbot';
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest) {
     try {
-        const { id } = await params;
+        const chatbot: ChatbotConfig = await request.json();
 
-        // Erst versuchen, aus KV (Redis) zu laden
-        let chatbot = await getChatbot(id);
+        const result = await saveChatbot(chatbot);
 
-        // Falls nicht in KV, aus JSON-Datei laden (Fallback)
-        if (!chatbot) {
-            const designs = chatbotDesigns as ChatbotDesigns;
-            chatbot = designs.chatbots[id];
-        }
-
-        if (!chatbot) {
+        if (result.success) {
+            return NextResponse.json(chatbot, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                }
+            });
+        } else {
             return NextResponse.json(
-                { error: 'Chatbot nicht gefunden' },
+                { error: 'Fehler beim Speichern' },
                 {
-                    status: 404,
+                    status: 500,
                     headers: {
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -32,17 +29,35 @@ export async function GET(
                 }
             );
         }
+    } catch (error) {
+        return NextResponse.json(
+            { error: 'Ungültige Anfrage' },
+            {
+                status: 400,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                }
+            }
+        );
+    }
+}
 
-        return NextResponse.json(chatbot, {
+export async function GET() {
+    try {
+        const chatbots = await getAllChatbots();
+
+        return NextResponse.json({ chatbots }, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             }
         });
-    } catch {
+    } catch (error) {
         return NextResponse.json(
-            { error: 'Interner Server-Fehler' },
+            { error: 'Fehler beim Laden der Chatbots' },
             {
                 status: 500,
                 headers: {
@@ -55,7 +70,6 @@ export async function GET(
     }
 }
 
-// OPTIONS Handler für CORS Preflight Requests
 export async function OPTIONS() {
     return new NextResponse(null, {
         status: 200,

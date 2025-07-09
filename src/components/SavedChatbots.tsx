@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +12,30 @@ interface SavedChatbotsProps {
 }
 
 export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps) {
-  // selectedChatbot entfernt, da nicht verwendet
+  const [allChatbots, setAllChatbots] = useState<ChatbotConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Lade alle Chatbots aus KV beim Mount
+  useEffect(() => {
+    const loadChatbots = async () => {
+      try {
+        const response = await fetch('/api/chatbot');
+        if (response.ok) {
+          const data = await response.json();
+          setAllChatbots(data.chatbots || []);
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Chatbots:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChatbots();
+  }, []);
+
+  // Kombiniere lokale und gespeicherte Chatbots
+  const combinedChatbots = [...chatbots, ...allChatbots];
 
   const generateScript = (chatbotId: string) => {
     // Verwende die aktuelle Domain für das Script
@@ -27,13 +51,17 @@ export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps
     <div className="max-w-4xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-6">Gespeicherte Chatbots</h2>
       
-      {chatbots.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">Lade Chatbots...</p>
+        </div>
+      ) : combinedChatbots.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600">Noch keine Chatbots gespeichert.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {chatbots.map((chatbot) => (
+          {combinedChatbots.map((chatbot) => (
             <div
               key={chatbot.id}
               className="bg-white p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow"

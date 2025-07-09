@@ -59,13 +59,33 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
     setGeneratedScript(script);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const config: ChatbotConfig = {
       id: `chatbot-${Date.now()}`,
       name,
       design
     };
-    onSave(config);
+    
+    try {
+      // Speichere in KV (Redis)
+      const response = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config),
+      });
+      
+      if (response.ok) {
+        onSave(config);
+        alert('Chatbot erfolgreich gespeichert!');
+      } else {
+        alert('Fehler beim Speichern des Chatbots.');
+      }
+    } catch (error) {
+      console.error('Fehler beim Speichern:', error);
+      alert('Fehler beim Speichern des Chatbots.');
+    }
   };
 
   return (
