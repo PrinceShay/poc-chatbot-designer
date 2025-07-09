@@ -1,18 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import ChatbotDesigner from '@/components/ChatbotDesigner';
-import { ChatbotConfig } from '@/types/chatbot';
 import Link from 'next/link';
 
 export default function Home() {
-  const [savedChatbots, setSavedChatbots] = useState<ChatbotConfig[]>([]);
-
-  const handleSaveChatbot = (config: ChatbotConfig) => {
-    setSavedChatbots(prev => [...prev, config]);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -39,7 +31,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="py-8">
-        <ChatbotDesigner onSave={handleSaveChatbot} />
+        <ChatbotDesigner />
       </main>
 
       {/* Footer */}

@@ -15,7 +15,7 @@ import { ChatbotDesign, ChatbotConfig } from '@/types/chatbot';
 import { chatbotTemplates } from '@/data/chatbot-templates';
 
 interface ChatbotDesignerProps {
-  onSave: (config: ChatbotConfig) => void;
+  onSave?: (config: ChatbotConfig) => void;
 }
 
 export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
@@ -133,7 +133,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
       });
       
       if (response.ok) {
-        onSave(config);
+        onSave?.(config);
         alert('Chatbot erfolgreich gespeichert!');
       } else {
         alert('Fehler beim Speichern des Chatbots.');
