@@ -661,7 +661,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
               <CardDescription>Live-Vorschau deines Chatbots</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="border rounded-lg p-4 bg-gray-50 min-h-[600px] flex items-center justify-center">
+              <div className="border rounded-lg p-4 bg-gray-50 min-h-[700px] flex items-center justify-center">
                 {/* Chatbot Preview */}
                 <div
                   style={{
@@ -679,7 +679,6 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
                     color: design.colors.text,
                     display: 'flex',
                     flexDirection: 'column',
-                    overflow: 'hidden',
                     opacity: design.opacity,
                     zIndex: design.zIndex,
                     ...getAnimationStyle()
