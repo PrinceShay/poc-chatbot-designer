@@ -1,3 +1,5 @@
+import Script from "next/script";
+
 export default function DemoPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -44,7 +46,7 @@ export default function DemoPage() {
               <h3 className="font-semibold text-blue-900">Modern Blue Chatbot</h3>
               <p className="text-sm text-blue-700">
                 Script: <code className="bg-blue-100 px-2 py-1 rounded text-xs">
-                  &lt;script src="/chatbot.js" data-chatbot-id="chatbot-1"&gt;&lt;/script&gt;
+                  &lt;script src=&quot;/chatbot.js&quot; data-chatbot-id=&quot;chatbot-1&quot;&gt;&lt;/script&gt;
                 </code>
               </p>
             </div>
@@ -53,7 +55,7 @@ export default function DemoPage() {
               <h3 className="font-semibold text-green-900">Dark Theme Chatbot</h3>
               <p className="text-sm text-green-700">
                 Script: <code className="bg-green-100 px-2 py-1 rounded text-xs">
-                  &lt;script src="/chatbot.js" data-chatbot-id="chatbot-2"&gt;&lt;/script&gt;
+                  &lt;script src=&quot;/chatbot.js&quot; data-chatbot-id=&quot;chatbot-2&quot;&gt;&lt;/script&gt;
                 </code>
               </p>
             </div>
@@ -62,7 +64,7 @@ export default function DemoPage() {
               <h3 className="font-semibold text-gray-900">Minimalist Chatbot</h3>
               <p className="text-sm text-gray-700">
                 Script: <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                  &lt;script src="/chatbot.js" data-chatbot-id="chatbot-3"&gt;&lt;/script&gt;
+                  &lt;script src=&quot;/chatbot.js&quot; data-chatbot-id=&quot;chatbot-3&quot;&gt;&lt;/script&gt;
                 </code>
               </p>
             </div>
@@ -71,9 +73,9 @@ export default function DemoPage() {
       </div>
       
       {/* Chatbot Scripts */}
-      <script src="/chatbot.js" data-chatbot-id="chatbot-1"></script>
-      <script src="/chatbot.js" data-chatbot-id="chatbot-2"></script>
-      <script src="/chatbot.js" data-chatbot-id="chatbot-3"></script>
+      <Script src="/chatbot.js" data-chatbot-id="chatbot-1" strategy="afterInteractive" />
+      <Script src="/chatbot.js" data-chatbot-id="chatbot-2" strategy="afterInteractive" />
+      <Script src="/chatbot.js" data-chatbot-id="chatbot-3" strategy="afterInteractive" />
     </div>
   );
 } 

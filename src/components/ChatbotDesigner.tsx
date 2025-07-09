@@ -4,9 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { ChatbotDesign, ChatbotConfig } from '@/types/chatbot';
 
@@ -200,7 +198,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
                 <Label htmlFor="position">Position</Label>
                 <Select
                   value={design.position}
-                  onValueChange={(value: any) => updateDesign({ position: value })}
+                  onValueChange={(value: string) => updateDesign({ position: value as ChatbotDesign['position'] })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -234,7 +232,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
                 <Label htmlFor="fontFamily">Schriftart</Label>
                 <Select
                   value={design.fontFamily}
-                  onValueChange={(value) => updateDesign({ fontFamily: value })}
+                  onValueChange={(value: string) => updateDesign({ fontFamily: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />

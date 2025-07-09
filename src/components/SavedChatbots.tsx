@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +11,7 @@ interface SavedChatbotsProps {
 }
 
 export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps) {
-  const [selectedChatbot, setSelectedChatbot] = useState<ChatbotConfig | null>(null);
+  // selectedChatbot entfernt, da nicht verwendet
 
   const generateScript = (chatbotId: string) => {
     return `<script src="/chatbot.js" data-chatbot-id="${chatbotId}"></script>`;
@@ -86,7 +85,6 @@ export default function SavedChatbots({ chatbots, onDelete }: SavedChatbotsProps
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setSelectedChatbot(chatbot)}
                     >
                       Script anzeigen
                     </Button>
