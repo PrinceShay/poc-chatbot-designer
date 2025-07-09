@@ -112,8 +112,6 @@ export async function updateChatbot(chatbotId: string, chatbotData: ChatbotConfi
                 id: chatbotData.id,
                 name: chatbotData.name,
                 design: JSON.stringify(chatbotData.design),
-                template: chatbotData.template || '',
-                updated_at: new Date().toISOString(),
             }
         );
 
