@@ -3,20 +3,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import ChatbotDesigner from '@/components/ChatbotDesigner';
-import SavedChatbots from '@/components/SavedChatbots';
 import { ChatbotConfig } from '@/types/chatbot';
+import Link from 'next/link';
 
 export default function Home() {
   const [savedChatbots, setSavedChatbots] = useState<ChatbotConfig[]>([]);
-  const [activeTab, setActiveTab] = useState<'designer' | 'saved'>('designer');
 
   const handleSaveChatbot = (config: ChatbotConfig) => {
     setSavedChatbots(prev => [...prev, config]);
-    setActiveTab('saved');
-  };
-
-  const handleDeleteChatbot = (id: string) => {
-    setSavedChatbots(prev => prev.filter(chatbot => chatbot.id !== id));
   };
 
   return (
@@ -27,18 +21,11 @@ export default function Home() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Chatbot Designer</h1>
             <div className="flex gap-2">
-              <Button
-                variant={activeTab === 'designer' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('designer')}
-              >
-                Designer
-              </Button>
-              <Button
-                variant={activeTab === 'saved' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('saved')}
-              >
-                Gespeicherte Chatbots ({savedChatbots.length})
-              </Button>
+              <Link href="/saved">
+                <Button variant="outline">
+                  Gespeicherte Chatbots
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 onClick={() => window.open('/demo', '_blank')}
@@ -52,14 +39,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="py-8">
-        {activeTab === 'designer' ? (
-          <ChatbotDesigner onSave={handleSaveChatbot} />
-        ) : (
-          <SavedChatbots 
-            chatbots={savedChatbots} 
-            onDelete={handleDeleteChatbot} 
-          />
-        )}
+        <ChatbotDesigner onSave={handleSaveChatbot} />
       </main>
 
       {/* Footer */}
