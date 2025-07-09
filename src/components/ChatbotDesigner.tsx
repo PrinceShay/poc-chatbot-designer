@@ -661,7 +661,7 @@ export default function ChatbotDesigner({ onSave }: ChatbotDesignerProps) {
               <CardDescription>Live-Vorschau deines Chatbots</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="border rounded-lg p-4 bg-gray-50 min-h-[500px] relative">
+              <div className="border rounded-lg p-4 bg-gray-50 min-h-[700px] max-h-[800px] relative overflow-hidden">
                 {/* Chatbot Preview */}
                 <div
                   className="absolute"

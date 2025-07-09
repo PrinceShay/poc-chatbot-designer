@@ -18,12 +18,7 @@ export default function Home() {
                   Gespeicherte Chatbots
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                onClick={() => window.open('/demo', '_blank')}
-              >
-                Demo
-              </Button>
+              
             </div>
           </div>
         </div>
