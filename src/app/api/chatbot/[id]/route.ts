@@ -20,7 +20,7 @@ export async function GET(
         }
 
         return NextResponse.json(chatbot);
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Interner Server-Fehler' },
             { status: 500 }
