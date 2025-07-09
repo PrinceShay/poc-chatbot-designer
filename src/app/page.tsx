@@ -38,7 +38,7 @@ export default function Home() {
     }
   };
 
-  const handleSave = (config: ChatbotConfig) => {
+  const handleSave = () => {
     // Nach dem Speichern zur Saved-Seite weiterleiten
     window.location.href = '/saved';
   };

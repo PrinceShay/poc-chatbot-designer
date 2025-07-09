@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getChatbot, deleteChatbotById } from '@/lib/appwrite';
-import { ChatbotConfig } from '@/types/chatbot';
 
 export async function GET(
     request: NextRequest,
@@ -11,7 +10,7 @@ export async function GET(
         console.log('Suche Chatbot mit ID:', id);
 
         // Lade aus Appwrite
-        let chatbot = await getChatbot(id);
+        const chatbot = await getChatbot(id);
         console.log('Appwrite Ergebnis:', chatbot);
 
         if (!chatbot) {

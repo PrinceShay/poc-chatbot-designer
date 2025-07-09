@@ -68,7 +68,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
   const [name, setName] = useState(editChatbot?.name || 'Mein Chatbot');
   const [generatedScript, setGeneratedScript] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>(editChatbot?.template || '');
-  const [chatbotId, setChatbotId] = useState(editChatbot?.id || `chatbot-${Date.now()}`);
+  const chatbotId = editChatbot?.id || `chatbot-${Date.now()}`;
 
   const updateDesign = (updates: Partial<ChatbotDesign>) => {
     setDesign(prev => ({ ...prev, ...updates }));
