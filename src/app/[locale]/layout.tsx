@@ -36,7 +36,7 @@ export default async function RootLayout({
   let messages;
   try {
     messages = (await import(`../../i18n/${locale}.json`)).default;
-  } catch (error) {
+  } catch {
     messages = (await import(`../../i18n/de.json`)).default;
   }
 
