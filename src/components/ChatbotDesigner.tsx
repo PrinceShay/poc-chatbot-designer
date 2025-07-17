@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ChatbotDesign, ChatbotConfig } from '@/types/chatbot';
 import { chatbotTemplates } from '@/data/chatbot-templates';
+import { useTranslations } from 'next-intl';
 
 interface ChatbotDesignerProps {
   onSave?: (config: ChatbotConfig) => void;
@@ -20,6 +21,8 @@ interface ChatbotDesignerProps {
 }
 
 export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesignerProps) {
+  const t = useTranslations('ChatbotDesigner');
+
   const [design, setDesign] = useState<ChatbotDesign>(editChatbot?.design || {
     colors: {
       primary: '#3b82f6',
@@ -51,7 +54,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
       easing: 'ease-out'
     },
     behavior: {
-      welcomeMessage: 'Hallo! Wie kann ich Ihnen heute helfen?',
+      welcomeMessage: t('welcomeMessagePlaceholder'),
       autoOpen: false,
       autoOpenDelay: 3000,
       showTypingIndicator: true,
@@ -65,7 +68,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
     zIndex: 1000
   });
 
-  const [name, setName] = useState(editChatbot?.name || 'Mein Chatbot');
+  const [name, setName] = useState(editChatbot?.name || t('chatbotNamePlaceholder'));
   const [generatedScript, setGeneratedScript] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>(editChatbot?.template || '');
   const chatbotId = editChatbot?.id || `chatbot-${Date.now()}`;
@@ -124,11 +127,11 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
       design,
       template: selectedTemplate
     };
-    
+
     try {
       const method = editChatbot ? 'PUT' : 'POST';
       const url = editChatbot ? `/api/chatbot/${chatbotId}` : '/api/chatbot';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -136,7 +139,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
         },
         body: JSON.stringify(config),
       });
-      
+
       if (response.ok) {
         onSave?.(config);
         alert(editChatbot ? 'Chatbot erfolgreich aktualisiert!' : 'Chatbot erfolgreich gespeichert!');
@@ -155,10 +158,10 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
 
   const getAnimationStyle = () => {
     if (!design.animation.enabled) return {};
-    
+
     const duration = design.animation.duration;
     const easing = design.animation.easing;
-    
+
     switch (design.animation.type) {
       case 'fade':
         return {
@@ -194,8 +197,8 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">Chatbot Designer</h1>
-        <p className="text-gray-600">Erstelle deinen eigenen Chatbot mit individuellem Design</p>
+        <h1 className="text-3xl font-bold mb-2">{t('chatbotDesignerTitle')}</h1>
+        <p className="text-gray-600">{t('chatbotDesignerDescription')}</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
@@ -203,33 +206,33 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
         <div className="xl:col-span-2 space-y-6">
           <Tabs defaultValue="basics" className="w-full">
             <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="basics">Grundlagen</TabsTrigger>
-              <TabsTrigger value="colors">Farben</TabsTrigger>
-              <TabsTrigger value="layout">Layout</TabsTrigger>
-              <TabsTrigger value="animation">Animation</TabsTrigger>
-              <TabsTrigger value="behavior">Verhalten</TabsTrigger>
-              <TabsTrigger value="templates">Vorlagen</TabsTrigger>
+              <TabsTrigger value="basics">{t('basicsTab')}</TabsTrigger>
+              <TabsTrigger value="colors">{t('colorsTab')}</TabsTrigger>
+              <TabsTrigger value="layout">{t('layoutTab')}</TabsTrigger>
+              <TabsTrigger value="animation">{t('animationTab')}</TabsTrigger>
+              <TabsTrigger value="behavior">{t('behaviorTab')}</TabsTrigger>
+              <TabsTrigger value="templates">{t('templatesTab')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basics" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Grundlagen</CardTitle>
-                  <CardDescription>Basis-Einstellungen für deinen Chatbot</CardDescription>
+                  <CardTitle>{t('basicsTitle')}</CardTitle>
+                  <CardDescription>{t('basicsDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="name">Chatbot Name</Label>
+                    <Label htmlFor="name">{t('chatbotNameLabel')}</Label>
                     <Input
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Mein Chatbot"
+                      placeholder={t('chatbotNamePlaceholder')}
                     />
                   </div>
-                  
+
                   <div>
-                    <Label htmlFor="fontFamily">Schriftart</Label>
+                    <Label htmlFor="fontFamily">{t('fontFamilyLabel')}</Label>
                     <Select
                       value={design.fontFamily}
                       onValueChange={(value: string) => updateDesign({ fontFamily: value })}
@@ -238,24 +241,24 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Inter, sans-serif">Inter</SelectItem>
-                        <SelectItem value="Roboto, sans-serif">Roboto</SelectItem>
-                        <SelectItem value="Poppins, sans-serif">Poppins</SelectItem>
-                        <SelectItem value="Nunito, sans-serif">Nunito</SelectItem>
-                        <SelectItem value="system-ui, sans-serif">System UI</SelectItem>
-                        <SelectItem value="Arial, sans-serif">Arial</SelectItem>
+                        <SelectItem value="Inter, sans-serif">{t('fontInter')}</SelectItem>
+                        <SelectItem value="Roboto, sans-serif">{t('fontRoboto')}</SelectItem>
+                        <SelectItem value="Poppins, sans-serif">{t('fontPoppins')}</SelectItem>
+                        <SelectItem value="Nunito, sans-serif">{t('fontNunito')}</SelectItem>
+                        <SelectItem value="system-ui, sans-serif">{t('fontSystemUi')}</SelectItem>
+                        <SelectItem value="Arial, sans-serif">{t('fontArial')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="zIndex">Z-Index</Label>
+                    <Label htmlFor="zIndex">{t('zIndexLabel')}</Label>
                     <Input
                       id="zIndex"
                       type="number"
                       value={design.zIndex}
                       onChange={(e) => updateDesign({ zIndex: parseInt(e.target.value) })}
-                      placeholder="1000"
+                      placeholder={t('zIndexPlaceholder')}
                     />
                   </div>
                 </CardContent>
@@ -265,20 +268,20 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
             <TabsContent value="colors" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Farben</CardTitle>
-                  <CardDescription>Definiere das Farbschema deines Chatbots</CardDescription>
+                  <CardTitle>{t('colorsTitle')}</CardTitle>
+                  <CardDescription>{t('colorsDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries({
-                    primary: 'Primärfarbe',
-                    secondary: 'Sekundärfarbe',
-                    background: 'Hintergrundfarbe',
-                    text: 'Textfarbe',
-                    border: 'Rahmenfarbe',
-                    accent: 'Akzentfarbe',
-                    hover: 'Hover-Farbe',
-                    success: 'Erfolgsfarbe',
-                    error: 'Fehlerfarbe'
+                    primary: t('primaryColorLabel'),
+                    secondary: t('secondaryColorLabel'),
+                    background: t('backgroundColorLabel'),
+                    text: t('textColorLabel'),
+                    border: t('borderColorLabel'),
+                    accent: t('accentColorLabel'),
+                    hover: t('hoverColorLabel'),
+                    success: t('successColorLabel'),
+                    error: t('errorColorLabel')
                   }).map(([key, label]) => (
                     <div key={key}>
                       <Label htmlFor={key}>{label}</Label>
@@ -305,54 +308,54 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
             <TabsContent value="layout" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Layout & Größe</CardTitle>
-                  <CardDescription>Größe, Position und Rahmen-Einstellungen</CardDescription>
+                  <CardTitle>{t('layoutTitle')}</CardTitle>
+                  <CardDescription>{t('layoutDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="width">Breite</Label>
+                      <Label htmlFor="width">{t('widthLabel')}</Label>
                       <Input
                         id="width"
                         value={design.size.width}
                         onChange={(e) => updateSize({ width: e.target.value })}
-                        placeholder="400px"
+                        placeholder={t('widthPlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="height">Höhe</Label>
+                      <Label htmlFor="height">{t('heightLabel')}</Label>
                       <Input
                         id="height"
                         value={design.size.height}
                         onChange={(e) => updateSize({ height: e.target.value })}
-                        placeholder="600px"
+                        placeholder={t('heightPlaceholder')}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="minWidth">Min. Breite</Label>
+                      <Label htmlFor="minWidth">{t('minWidthLabel')}</Label>
                       <Input
                         id="minWidth"
                         value={design.size.minWidth || ''}
                         onChange={(e) => updateSize({ minWidth: e.target.value })}
-                        placeholder="300px"
+                        placeholder={t('minWidthPlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="maxWidth">Max. Breite</Label>
+                      <Label htmlFor="maxWidth">{t('maxWidthLabel')}</Label>
                       <Input
                         id="maxWidth"
                         value={design.size.maxWidth || ''}
                         onChange={(e) => updateSize({ maxWidth: e.target.value })}
-                        placeholder="500px"
+                        placeholder={t('maxWidthPlaceholder')}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="position">Position</Label>
+                    <Label htmlFor="position">{t('positionLabel')}</Label>
                     <Select
                       value={design.position}
                       onValueChange={(value: string) => updateDesign({ position: value as ChatbotDesign['position'] })}
@@ -361,37 +364,37 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="bottom-right">Unten rechts</SelectItem>
-                        <SelectItem value="bottom-left">Unten links</SelectItem>
-                        <SelectItem value="top-right">Oben rechts</SelectItem>
-                        <SelectItem value="top-left">Oben links</SelectItem>
+                        <SelectItem value="bottom-right">{t('positionBottomRight')}</SelectItem>
+                        <SelectItem value="bottom-left">{t('positionBottomLeft')}</SelectItem>
+                        <SelectItem value="top-right">{t('positionTopRight')}</SelectItem>
+                        <SelectItem value="top-left">{t('positionTopLeft')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="borderRadius">Border Radius</Label>
+                      <Label htmlFor="borderRadius">{t('borderRadiusLabel')}</Label>
                       <Input
                         id="borderRadius"
                         value={design.borderRadius}
                         onChange={(e) => updateDesign({ borderRadius: e.target.value })}
-                        placeholder="12px"
+                        placeholder={t('borderRadiusPlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="borderWidth">Border Breite</Label>
+                      <Label htmlFor="borderWidth">{t('borderWidthLabel')}</Label>
                       <Input
                         id="borderWidth"
                         value={design.borderWidth}
                         onChange={(e) => updateDesign({ borderWidth: e.target.value })}
-                        placeholder="1px"
+                        placeholder={t('borderWidthPlaceholder')}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="borderStyle">Border Stil</Label>
+                    <Label htmlFor="borderStyle">{t('borderStyleLabel')}</Label>
                     <Select
                       value={design.borderStyle}
                       onValueChange={(value: string) => updateDesign({ borderStyle: value as ChatbotDesign['borderStyle'] })}
@@ -400,26 +403,26 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="solid">Solid</SelectItem>
-                        <SelectItem value="dashed">Dashed</SelectItem>
-                        <SelectItem value="dotted">Dotted</SelectItem>
-                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="solid">{t('borderStyleSolid')}</SelectItem>
+                        <SelectItem value="dashed">{t('borderStyleDashed')}</SelectItem>
+                        <SelectItem value="dotted">{t('borderStyleDotted')}</SelectItem>
+                        <SelectItem value="none">{t('borderStyleNone')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="shadow">Schatten</Label>
+                    <Label htmlFor="shadow">{t('shadowLabel')}</Label>
                     <Input
                       id="shadow"
                       value={design.shadow}
                       onChange={(e) => updateDesign({ shadow: e.target.value })}
-                      placeholder="0 10px 25px rgba(0, 0, 0, 0.1)"
+                      placeholder={t('shadowPlaceholder')}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="opacity">Transparenz</Label>
+                    <Label htmlFor="opacity">{t('opacityLabel')}</Label>
                     <Slider
                       value={[design.opacity]}
                       onValueChange={([value]) => updateDesign({ opacity: value })}
@@ -437,8 +440,8 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
             <TabsContent value="animation" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Animationen</CardTitle>
-                  <CardDescription>Definiere Animationen und Übergänge</CardDescription>
+                  <CardTitle>{t('animationTitle')}</CardTitle>
+                  <CardDescription>{t('animationDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center space-x-2">
@@ -447,13 +450,13 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                       checked={design.animation.enabled}
                       onCheckedChange={(checked: boolean) => updateAnimation({ enabled: checked })}
                     />
-                    <Label htmlFor="animation-enabled">Animationen aktivieren</Label>
+                    <Label htmlFor="animation-enabled">{t('enableAnimationsLabel')}</Label>
                   </div>
 
                   {design.animation.enabled && (
                     <>
                       <div>
-                        <Label htmlFor="animation-type">Animationstyp</Label>
+                        <Label htmlFor="animation-type">{t('animationTypeLabel')}</Label>
                         <Select
                           value={design.animation.type}
                           onValueChange={(value: string) => updateAnimation({ type: value as ChatbotDesign['animation']['type'] })}
@@ -462,27 +465,27 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="fade">Fade</SelectItem>
-                            <SelectItem value="slide">Slide</SelectItem>
-                            <SelectItem value="bounce">Bounce</SelectItem>
-                            <SelectItem value="none">Keine</SelectItem>
+                            <SelectItem value="fade">{t('animationTypeFade')}</SelectItem>
+                            <SelectItem value="slide">{t('animationTypeSlide')}</SelectItem>
+                            <SelectItem value="bounce">{t('animationTypeBounce')}</SelectItem>
+                            <SelectItem value="none">{t('animationTypeNone')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div>
-                        <Label htmlFor="animation-duration">Dauer (ms)</Label>
+                        <Label htmlFor="animation-duration">{t('animationDurationLabel')}</Label>
                         <Input
                           id="animation-duration"
                           type="number"
                           value={design.animation.duration}
                           onChange={(e) => updateAnimation({ duration: parseInt(e.target.value) })}
-                          placeholder="300"
+                          placeholder={t('animationDurationPlaceholder')}
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="animation-easing">Easing</Label>
+                        <Label htmlFor="animation-easing">{t('animationEasingLabel')}</Label>
                         <Select
                           value={design.animation.easing}
                           onValueChange={(value: string) => updateAnimation({ easing: value as ChatbotDesign['animation']['easing'] })}
@@ -491,11 +494,11 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ease">Ease</SelectItem>
-                            <SelectItem value="ease-in">Ease In</SelectItem>
-                            <SelectItem value="ease-out">Ease Out</SelectItem>
-                            <SelectItem value="ease-in-out">Ease In Out</SelectItem>
-                            <SelectItem value="linear">Linear</SelectItem>
+                            <SelectItem value="ease">{t('animationEasingEase')}</SelectItem>
+                            <SelectItem value="ease-in">{t('animationEasingEaseIn')}</SelectItem>
+                            <SelectItem value="ease-out">{t('animationEasingEaseOut')}</SelectItem>
+                            <SelectItem value="ease-in-out">{t('animationEasingEaseInOut')}</SelectItem>
+                            <SelectItem value="linear">{t('animationEasingLinear')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -508,17 +511,17 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
             <TabsContent value="behavior" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Verhalten</CardTitle>
-                  <CardDescription>Definiere das Verhalten deines Chatbots</CardDescription>
+                  <CardTitle>{t('behaviorTitle')}</CardTitle>
+                  <CardDescription>{t('behaviorDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="welcomeMessage">Willkommensnachricht</Label>
+                    <Label htmlFor="welcomeMessage">{t('welcomeMessageLabel')}</Label>
                     <Textarea
                       id="welcomeMessage"
                       value={design.behavior.welcomeMessage}
                       onChange={(e) => updateBehavior({ welcomeMessage: e.target.value })}
-                      placeholder="Hallo! Wie kann ich Ihnen helfen?"
+                      placeholder={t('welcomeMessagePlaceholder')}
                       rows={2}
                     />
                   </div>
@@ -529,18 +532,18 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                       checked={design.behavior.autoOpen}
                       onCheckedChange={(checked: boolean) => updateBehavior({ autoOpen: checked })}
                     />
-                    <Label htmlFor="autoOpen">Automatisch öffnen</Label>
+                    <Label htmlFor="autoOpen">{t('autoOpenLabel')}</Label>
                   </div>
 
                   {design.behavior.autoOpen && (
                     <div>
-                      <Label htmlFor="autoOpenDelay">Verzögerung (ms)</Label>
+                      <Label htmlFor="autoOpenDelay">{t('autoOpenDelayLabel')}</Label>
                       <Input
                         id="autoOpenDelay"
                         type="number"
                         value={design.behavior.autoOpenDelay}
                         onChange={(e) => updateBehavior({ autoOpenDelay: parseInt(e.target.value) })}
-                        placeholder="3000"
+                        placeholder={t('autoOpenDelayPlaceholder')}
                       />
                     </div>
                   )}
@@ -551,17 +554,17 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                       checked={design.behavior.showTypingIndicator}
                       onCheckedChange={(checked: boolean) => updateBehavior({ showTypingIndicator: checked })}
                     />
-                    <Label htmlFor="showTypingIndicator">Typing-Indikator anzeigen</Label>
+                    <Label htmlFor="showTypingIndicator">{t('showTypingIndicatorLabel')}</Label>
                   </div>
 
                   <div>
-                    <Label htmlFor="typingSpeed">Typing-Geschwindigkeit (ms)</Label>
+                    <Label htmlFor="typingSpeed">{t('typingSpeedLabel')}</Label>
                     <Input
                       id="typingSpeed"
                       type="number"
                       value={design.behavior.typingSpeed}
                       onChange={(e) => updateBehavior({ typingSpeed: parseInt(e.target.value) })}
-                      placeholder="50"
+                      placeholder={t('typingSpeedPlaceholder')}
                     />
                   </div>
 
@@ -571,7 +574,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                       checked={design.behavior.closeOnOutsideClick}
                       onCheckedChange={(checked: boolean) => updateBehavior({ closeOnOutsideClick: checked })}
                     />
-                    <Label htmlFor="closeOnOutsideClick">Bei Klick außerhalb schließen</Label>
+                    <Label htmlFor="closeOnOutsideClick">{t('closeOnOutsideClickLabel')}</Label>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -580,7 +583,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                       checked={design.behavior.rememberPosition}
                       onCheckedChange={(checked: boolean) => updateBehavior({ rememberPosition: checked })}
                     />
-                    <Label htmlFor="rememberPosition">Position merken</Label>
+                    <Label htmlFor="rememberPosition">{t('rememberPositionLabel')}</Label>
                   </div>
                 </CardContent>
               </Card>
@@ -589,17 +592,16 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
             <TabsContent value="templates" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Vorlagen</CardTitle>
-                  <CardDescription>Wähle eine Vorlage als Ausgangspunkt</CardDescription>
+                  <CardTitle>{t('templatesTitle')}</CardTitle>
+                  <CardDescription>{t('templatesDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {chatbotTemplates.map((template) => (
                       <Card
                         key={template.id}
-                        className={`cursor-pointer transition-all hover:shadow-md ${
-                          selectedTemplate === template.id ? 'ring-2 ring-blue-500' : ''
-                        }`}
+                        className={`cursor-pointer transition-all hover:shadow-md ${selectedTemplate === template.id ? 'ring-2 ring-blue-500' : ''
+                          }`}
                         onClick={() => applyTemplate(template.id)}
                       >
                         <CardHeader className="pb-3">
@@ -648,12 +650,8 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
           </Tabs>
 
           <div className="flex gap-4">
-            <Button onClick={handleSave} className="flex-1">
-              Design speichern
-            </Button>
-            <Button onClick={generateScript} variant="outline" className="flex-1">
-              Script generieren
-            </Button>
+            <Button onClick={handleSave} className="flex-1">{t('saveDesignButton')}</Button>
+            <Button onClick={generateScript} variant="outline" className="flex-1">{t('generateScriptButton')}</Button>
           </div>
         </div>
 
@@ -661,8 +659,8 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Vorschau</CardTitle>
-              <CardDescription>Live-Vorschau deines Chatbots</CardDescription>
+              <CardTitle>{t('previewTitle')}</CardTitle>
+              <CardDescription>{t('previewDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="border rounded-lg p-4 bg-gray-50">
@@ -696,7 +694,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                     <span>{name}</span>
                     <span>×</span>
                   </div>
-                  
+
                   {/* Chat Area */}
                   <div className="flex-1 p-4 bg-gray-100">
                     <div className="space-y-2">
@@ -710,7 +708,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                         className="p-3 rounded-lg max-w-[80%] ml-auto"
                         style={{ backgroundColor: design.colors.primary, color: 'white' }}
                       >
-                        Hallo! Ich habe eine Frage.
+                        {t('chatbotGreeting')}
                       </div>
                       {design.behavior.showTypingIndicator && (
                         <div
@@ -726,7 +724,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Input Area */}
                   <div
                     className="p-4 border-t flex gap-2"
@@ -734,7 +732,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                   >
                     <input
                       type="text"
-                      placeholder="Nachricht eingeben..."
+                      placeholder={t('messageInputPlaceholder')}
                       className="flex-1 px-3 py-2 border rounded-full outline-none"
                       style={{
                         borderColor: design.colors.border,
@@ -755,7 +753,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                         e.currentTarget.style.backgroundColor = design.colors.primary;
                       }}
                     >
-                      Senden
+                      {t('sendButton')}
                     </button>
                   </div>
                 </div>
@@ -766,8 +764,8 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
           {generatedScript && (
             <Card>
               <CardHeader>
-                <CardTitle>Generiertes Script</CardTitle>
-                <CardDescription>Kopiere diesen Code in deine HTML-Seite</CardDescription>
+                <CardTitle>{t('generatedScriptTitle')}</CardTitle>
+                <CardDescription>{t('generatedScriptDescription')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Textarea
@@ -780,7 +778,7 @@ export default function ChatbotDesigner({ onSave, editChatbot }: ChatbotDesigner
                   onClick={() => navigator.clipboard.writeText(generatedScript)}
                   className="w-full"
                 >
-                  In Zwischenablage kopieren
+                  {t('copyToClipboardButton')}
                 </Button>
               </CardContent>
             </Card>

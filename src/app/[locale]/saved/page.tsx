@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { ChatbotConfig } from '@/types/chatbot';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Label } from '@/components/ui/label';
+import { useTranslations } from 'next-intl';
+import LanguageSelector from '@/components/LanguageSelector';
 
 export default function SavedChatbotsPage() {
+  const t = useTranslations('SavedPage');
   const [chatbots, setChatbots] = useState<(ChatbotConfig & { documentId?: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -74,21 +77,24 @@ export default function SavedChatbotsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gespeicherte Chatbots</h1>
-              <p className="text-gray-600 mt-2">Verwalte deine erstellten Chatbot-Designs</p>
+              <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
+              <p className="text-gray-600 mt-2">{t('description')}</p>
             </div>
-            <Link href="/">
-              <Button variant="outline">
-                ← Zurück zum Designer
-              </Button>
-            </Link>
+            <div className="flex gap-2 items-center">
+              <Link href="/">
+                <Button variant="outline">
+                  ← {t('backToDesigner')}
+                </Button>
+              </Link>
+              <LanguageSelector />
+            </div>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4">Lade Chatbots...</p>
+            <p className="text-gray-600 mt-4">{t('loading')}</p>
           </div>
         ) : chatbots.length === 0 ? (
           <div className="text-center py-12">
@@ -98,11 +104,11 @@ export default function SavedChatbotsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Noch keine Chatbots gespeichert</h3>
-              <p className="text-gray-600 mb-6">Erstelle deinen ersten Chatbot im Designer und speichere ihn hier.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('noChatbots')}</h3>
+              <p className="text-gray-600 mb-6">{t('noChatbotsDescription')}</p>
               <Link href="/">
                 <Button>
-                  Chatbot erstellen
+                  {t('createChatbot')}
                 </Button>
               </Link>
             </div>
@@ -118,7 +124,7 @@ export default function SavedChatbotsPage() {
                   <h3 className="text-lg font-semibold">{chatbot.name}</h3>
                   <span className="text-xs text-gray-500">ID: {chatbot.id}</span>
                 </div>
-                
+
                 {/* Mini Preview */}
                 <div className="mb-4 p-3 border rounded bg-gray-50">
                   <div
@@ -150,13 +156,13 @@ export default function SavedChatbotsPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2 text-sm text-gray-600">
-                  <div>Position: {chatbot.design.position}</div>
-                  <div>Größe: {chatbot.design.size.width} × {chatbot.design.size.height}</div>
-                  <div>Schriftart: {chatbot.design.fontFamily.split(',')[0]}</div>
+                  <div>{t('position')}: {chatbot.design.position}</div>
+                  <div>{t('size')}: {chatbot.design.size.width} × {chatbot.design.size.height}</div>
+                  <div>{t('fontFamily')}: {chatbot.design.fontFamily.split(',')[0]}</div>
                 </div>
-                
+
                 <div className="flex gap-2 mt-4">
                   <Dialog>
                     <DialogTrigger asChild>
@@ -164,16 +170,16 @@ export default function SavedChatbotsPage() {
                         variant="outline"
                         size="sm"
                       >
-                        Script anzeigen
+                        {t('viewScript')}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-lg">
                       <DialogHeader>
-                        <DialogTitle>Script für {chatbot.name}</DialogTitle>
+                        <DialogTitle>{t('scriptFor')} {chatbot.name}</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-3">
                         <div>
-                          <Label className="text-sm font-medium">Script-Code:</Label>
+                          <Label className="text-sm font-medium">{t('scriptCode')}</Label>
                           <Textarea
                             value={generateScript(chatbot.id)}
                             readOnly
@@ -185,19 +191,19 @@ export default function SavedChatbotsPage() {
                           onClick={() => copyToClipboard(generateScript(chatbot.id), chatbot.id)}
                           className="w-full"
                         >
-                          {copiedId === chatbot.id ? '🎉 Kopiert!' : 'In Zwischenablage kopieren'}
+                          {copiedId === chatbot.id ? t('copied') : t('copyToClipboard')}
                         </Button>
                         <div className="text-xs text-gray-600">
-                          <p>Füge diesen Code in deine HTML-Seite ein.</p>
-                          <p className="mt-1 font-medium">Beispiel:</p>
+                          <p>{t('scriptInstructions')}</p>
+                          <p className="mt-1 font-medium">{t('scriptExample')}</p>
                           <div className="bg-gray-100 p-2 rounded mt-1 text-xs">
                             <div>&lt;!DOCTYPE html&gt;</div>
                             <div>&lt;html&gt;</div>
                             <div>&lt;head&gt;</div>
-                            <div>&nbsp;&nbsp;&lt;title&gt;Meine Seite&lt;/title&gt;</div>
+                            <div>&nbsp;&nbsp;&lt;title&gt;{t('myPage')}&lt;/title&gt;</div>
                             <div>&lt;/head&gt;</div>
                             <div>&lt;body&gt;</div>
-                            <div>&nbsp;&nbsp;&lt;h1&gt;Willkommen&lt;/h1&gt;</div>
+                            <div>&nbsp;&nbsp;&lt;h1&gt;{t('welcome')}&lt;/h1&gt;</div>
                             <div>&nbsp;&nbsp;{generateScript(chatbot.id)}</div>
                             <div>&lt;/body&gt;</div>
                             <div>&lt;/html&gt;</div>
@@ -206,22 +212,20 @@ export default function SavedChatbotsPage() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                  
+
                   <Link href={`/?edit=${chatbot.id}`}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                    >
-                      Bearbeiten
+                    <Button variant="outline" size="sm">
+                      {t('edit')}
                     </Button>
                   </Link>
-                  
+
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleDelete(chatbot.id)}
+                    className="text-red-600 hover:text-red-700"
                   >
-                    Löschen
+                    {t('delete')}
                   </Button>
                 </div>
               </div>

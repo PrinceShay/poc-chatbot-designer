@@ -1,0 +1,8 @@
+{
+    "HomePage": {
+        "title": "Chatbot Designer",
+        "editTitle": "Chatbot bearbeiten: {name}",
+        "savedBots": "Gespeicherte Chatbots",
+        "about": "Über uns"
+    }
+}

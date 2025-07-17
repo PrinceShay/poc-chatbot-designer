@@ -4,10 +4,13 @@ import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import ChatbotDesigner from '@/components/ChatbotDesigner';
 import { ChatbotConfig } from '@/types/chatbot';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import LanguageSelector from '@/components/LanguageSelector';
 
 function HomeContent() {
+  const t = useTranslations('HomePage');
   const [editChatbot, setEditChatbot] = useState<ChatbotConfig & { documentId?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
@@ -61,15 +64,20 @@ function HomeContent() {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">
-              {editChatbot ? `Chatbot bearbeiten: ${editChatbot.name}` : 'Chatbot Designer'}
+              {editChatbot ? t('editTitle', { name: editChatbot.name }) : t('title')}
             </h1>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <Link href="/saved">
                 <Button variant="outline">
-                  Gespeicherte Chatbots
+                  {t('savedBots')}
                 </Button>
               </Link>
-             
+              <Link href="/about">
+                <Button variant="outline">
+                  {t('about')}
+                </Button>
+              </Link>
+              <LanguageSelector />
             </div>
           </div>
         </div>
