@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   Trash2,
@@ -32,117 +33,165 @@ import {
   MapPin,
   User,
   Clock,
+  Brain,
+  ShoppingCart,
+  MessageSquare,
+  Settings,
 } from "lucide-react";
 import { saveContentItems, getContentItems } from "@/lib/appwrite";
 
-// Block-Typen Definition
-const BLOCK_TYPES = {
-  PRODUCT: {
-    id: "product",
-    name: "Produkt",
-    icon: Package,
+// GSAP Import mit Error Handling
+let useGSAP: any = null;
+let Draggable: any = null;
+
+try {
+  const gsapReact = require("@gsap/react");
+  const gsap = require("gsap");
+  const gsapDraggable = require("gsap/Draggable");
+
+  useGSAP = gsapReact.useGSAP;
+  Draggable = gsapDraggable.Draggable;
+
+  // GSAP Plugins registrieren
+  if (typeof window !== "undefined") {
+    gsap.registerPlugin(Draggable);
+  }
+} catch (error) {
+  console.warn("GSAP konnte nicht geladen werden:", error);
+}
+
+// Block-Typen Definition mit Gruppierung
+const BLOCK_GROUPS = [
+  {
+    name: "E-Commerce",
+    icon: ShoppingCart,
     color: "bg-blue-500",
-    fields: [
-      { id: "title", label: "Titel", type: "text", required: true },
-      { id: "description", label: "Beschreibung", type: "textarea" },
-      { id: "category", label: "Kategorie", type: "text" },
-      { id: "sku", label: "Artikelnummer", type: "text" },
-    ],
-  },
-  VARIANT: {
-    id: "variant",
-    name: "Variante",
-    icon: Palette,
-    color: "bg-green-500",
-    fields: [
-      { id: "name", label: "Name", type: "text", required: true },
-      { id: "color", label: "Farbe", type: "text" },
-      { id: "size", label: "Größe", type: "text" },
-      { id: "material", label: "Material", type: "text" },
-    ],
-  },
-  PRICE: {
-    id: "price",
-    name: "Preis",
-    icon: DollarSign,
-    color: "bg-yellow-500",
-    fields: [
-      { id: "amount", label: "Betrag", type: "number", required: true },
+    blocks: [
       {
-        id: "currency",
-        label: "Währung",
-        type: "select",
-        options: ["EUR", "USD", "CHF"],
+        id: "product",
+        name: "Produkt",
+        icon: Package,
+        color: "bg-blue-500",
+        fields: [
+          { id: "title", label: "Titel", type: "text", required: true },
+          { id: "description", label: "Beschreibung", type: "textarea" },
+          { id: "category", label: "Kategorie", type: "text" },
+          { id: "sku", label: "Artikelnummer", type: "text" },
+        ],
       },
       {
-        id: "type",
-        label: "Typ",
-        type: "select",
-        options: ["Einmalig", "Monatlich", "Jährlich"],
+        id: "variant",
+        name: "Variante",
+        icon: Palette,
+        color: "bg-green-500",
+        fields: [
+          { id: "name", label: "Name", type: "text", required: true },
+          { id: "color", label: "Farbe", type: "text" },
+          { id: "size", label: "Größe", type: "text" },
+          { id: "material", label: "Material", type: "text" },
+        ],
+      },
+      {
+        id: "price",
+        name: "Preis",
+        icon: DollarSign,
+        color: "bg-yellow-500",
+        fields: [
+          { id: "amount", label: "Betrag", type: "number", required: true },
+          {
+            id: "currency",
+            label: "Währung",
+            type: "select",
+            options: ["EUR", "USD", "CHF"],
+          },
+          {
+            id: "type",
+            label: "Typ",
+            type: "select",
+            options: ["Einmalig", "Monatlich", "Jährlich"],
+          },
+        ],
+      },
+      {
+        id: "image",
+        name: "Bild",
+        icon: Image,
+        color: "bg-purple-500",
+        fields: [
+          { id: "url", label: "Bild-URL", type: "text", required: true },
+          { id: "alt", label: "Alt-Text", type: "text" },
+          { id: "caption", label: "Beschriftung", type: "text" },
+        ],
       },
     ],
   },
-  IMAGE: {
-    id: "image",
-    name: "Bild",
-    icon: Image,
-    color: "bg-purple-500",
-    fields: [
-      { id: "url", label: "Bild-URL", type: "text", required: true },
-      { id: "alt", label: "Alt-Text", type: "text" },
-      { id: "caption", label: "Beschriftung", type: "text" },
-    ],
-  },
-  APPOINTMENT: {
-    id: "appointment",
-    name: "Termin",
+  {
+    name: "Termine",
     icon: Calendar,
     color: "bg-orange-500",
-    fields: [
-      { id: "title", label: "Titel", type: "text", required: true },
-      { id: "description", label: "Beschreibung", type: "textarea" },
-      { id: "duration", label: "Dauer (Minuten)", type: "number" },
+    blocks: [
+      {
+        id: "appointment",
+        name: "Termin",
+        icon: Calendar,
+        color: "bg-orange-500",
+        fields: [
+          { id: "title", label: "Titel", type: "text", required: true },
+          { id: "description", label: "Beschreibung", type: "textarea" },
+          { id: "duration", label: "Dauer (Minuten)", type: "number" },
+        ],
+      },
+      {
+        id: "location",
+        name: "Ort",
+        icon: MapPin,
+        color: "bg-red-500",
+        fields: [
+          { id: "name", label: "Name", type: "text", required: true },
+          { id: "address", label: "Adresse", type: "textarea" },
+          { id: "city", label: "Stadt", type: "text" },
+          { id: "zip", label: "PLZ", type: "text" },
+        ],
+      },
+      {
+        id: "contact",
+        name: "Kontakt",
+        icon: User,
+        color: "bg-indigo-500",
+        fields: [
+          { id: "name", label: "Name", type: "text", required: true },
+          { id: "email", label: "E-Mail", type: "email" },
+          { id: "phone", label: "Telefon", type: "tel" },
+        ],
+      },
+      {
+        id: "time",
+        name: "Zeit",
+        icon: Clock,
+        color: "bg-teal-500",
+        fields: [
+          { id: "date", label: "Datum", type: "date", required: true },
+          { id: "time", label: "Uhrzeit", type: "time" },
+          { id: "timezone", label: "Zeitzone", type: "text" },
+        ],
+      },
     ],
   },
-  LOCATION: {
-    id: "location",
-    name: "Ort",
-    icon: MapPin,
-    color: "bg-red-500",
-    fields: [
-      { id: "name", label: "Name", type: "text", required: true },
-      { id: "address", label: "Adresse", type: "textarea" },
-      { id: "city", label: "Stadt", type: "text" },
-      { id: "zip", label: "PLZ", type: "text" },
-    ],
-  },
-  CONTACT: {
-    id: "contact",
-    name: "Kontakt",
-    icon: User,
-    color: "bg-indigo-500",
-    fields: [
-      { id: "name", label: "Name", type: "text", required: true },
-      { id: "email", label: "E-Mail", type: "email" },
-      { id: "phone", label: "Telefon", type: "tel" },
-    ],
-  },
-  TIME: {
-    id: "time",
-    name: "Zeit",
-    icon: Clock,
-    color: "bg-teal-500",
-    fields: [
-      { id: "date", label: "Datum", type: "date", required: true },
-      { id: "time", label: "Uhrzeit", type: "time" },
-      { id: "timezone", label: "Zeitzone", type: "text" },
-    ],
-  },
+];
+
+// Zentrales Eingangsobjekt
+const CENTRAL_OBJECT = {
+  id: "central",
+  name: "Chat Brain",
+  icon: Brain,
+  color: "bg-gray-600",
+  description: "Zentraler Verbindungspunkt für alle Daten",
 };
 
 interface Block {
   id: string;
   type: string;
+  group: string;
   data: Record<string, any>;
   position: { x: number; y: number };
   connections: string[];
@@ -159,23 +208,74 @@ export default function ContentBuilderPage() {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
-  const [draggedBlock, setDraggedBlock] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const draggableRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // GSAP Draggable initialisieren - nur wenn GSAP verfügbar ist
+  if (useGSAP && Draggable) {
+    useGSAP(
+      () => {
+        if (blocks.length > 0 && canvasRef.current) {
+          // Neue Draggables erstellen - GSAP kümmert sich automatisch um Cleanup
+          blocks.forEach((block) => {
+            const element = draggableRefs.current.get(block.id);
+            if (element) {
+              try {
+                Draggable.create(element, {
+                  type: "x,y",
+                  bounds: canvasRef.current,
+                  onDrag: function () {
+                    const x = this.x;
+                    const y = this.y;
+
+                    setBlocks((prev) =>
+                      prev.map((b) =>
+                        b.id === block.id ? { ...b, position: { x, y } } : b
+                      )
+                    );
+                  },
+                  onDragEnd: function () {
+                    // Optional: Speichern nach Drag
+                  },
+                });
+              } catch (error) {
+                console.warn("Fehler beim Erstellen des Draggable:", error);
+              }
+            }
+          });
+        }
+      },
+      { dependencies: [blocks.length], scope: canvasRef }
+    );
+  }
 
   // Lade gespeicherte Daten beim Start
   useEffect(() => {
     loadContentItems();
+    // Füge zentrales Objekt hinzu, falls es nicht existiert
+    if (!blocks.find((b) => b.id === "central")) {
+      setBlocks((prev) => [
+        ...prev,
+        {
+          id: "central",
+          type: "central",
+          group: "central",
+          data: {},
+          position: { x: 400, y: 300 },
+          connections: [],
+        },
+      ]);
+    }
   }, []);
 
   const loadContentItems = async () => {
     try {
       const items = await getContentItems();
       if (items && items.length > 0) {
-        // Konvertiere gespeicherte Items zu Blocks
         const loadedBlocks = items.map((item: any) => ({
           id: item.id,
           type: item.type,
+          group: item.group || "e-commerce",
           data: item.data || {},
           position: item.position || { x: 100, y: 100 },
           connections: item.connections || [],
@@ -192,6 +292,7 @@ export default function ContentBuilderPage() {
       const items = blocks.map((block) => ({
         id: block.id,
         type: block.type,
+        group: block.group,
         data: block.data,
         position: block.position,
         connections: block.connections,
@@ -205,15 +306,18 @@ export default function ContentBuilderPage() {
     }
   };
 
-  const addBlock = (type: string) => {
-    const blockType = BLOCK_TYPES[type as keyof typeof BLOCK_TYPES];
-    if (!blockType) return;
+  const addBlock = (groupName: string, blockType: string) => {
+    const group = BLOCK_GROUPS.find((g) => g.name === groupName);
+    const blockConfig = group?.blocks.find((b) => b.id === blockType);
+
+    if (!blockConfig) return;
 
     const newBlock: Block = {
-      id: `${type}-${Date.now()}`,
-      type,
+      id: `${blockType}-${Date.now()}`,
+      type: blockType,
+      group: groupName,
       data: {},
-      position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
+      position: { x: 200 + Math.random() * 400, y: 200 + Math.random() * 400 },
       connections: [],
     };
 
@@ -232,6 +336,8 @@ export default function ContentBuilderPage() {
   };
 
   const deleteBlock = (blockId: string) => {
+    if (blockId === "central") return; // Zentrales Objekt kann nicht gelöscht werden
+
     setBlocks((prev) => prev.filter((block) => block.id !== blockId));
     setConnections((prev) =>
       prev.filter((conn) => conn.from !== blockId && conn.to !== blockId)
@@ -239,11 +345,6 @@ export default function ContentBuilderPage() {
     if (selectedBlock?.id === blockId) {
       setSelectedBlock(null);
     }
-  };
-
-  const startConnection = (blockId: string) => {
-    setDraggedBlock(blockId);
-    setIsDragging(true);
   };
 
   const createConnection = (fromBlockId: string, toBlockId: string) => {
@@ -280,15 +381,73 @@ export default function ContentBuilderPage() {
   };
 
   const renderBlock = (block: Block) => {
-    const blockType = BLOCK_TYPES[block.type as keyof typeof BLOCK_TYPES];
-    if (!blockType) return null;
-
-    const Icon = blockType.icon;
+    const isCentral = block.id === "central";
     const isSelected = selectedBlock?.id === block.id;
+
+    if (isCentral) {
+      const Icon = CENTRAL_OBJECT.icon;
+      return (
+        <div
+          key={block.id}
+          ref={(el) => {
+            if (el) draggableRefs.current.set(block.id, el);
+          }}
+          className={`absolute cursor-move p-6 rounded-lg border-2 shadow-lg ${
+            isSelected
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-300 bg-white"
+          }`}
+          style={{
+            left: block.position.x,
+            top: block.position.y,
+            transform: "translate(-50%, -50%)",
+            minWidth: "200px",
+          }}
+          onClick={() => setSelectedBlock(block)}
+        >
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className={`p-3 rounded ${CENTRAL_OBJECT.color}`}>
+              <Icon className="h-6 w-6 text-white" />
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-lg">{CENTRAL_OBJECT.name}</div>
+              <div className="text-sm text-gray-600">
+                {CENTRAL_OBJECT.description}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Hier könnte man Verbindungen zum zentralen Objekt erstellen
+              }}
+            >
+              <Link className="h-4 w-4 mr-2" />
+              Verbinden
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // Normale Blöcke
+    const group = BLOCK_GROUPS.find((g) => g.name === block.group);
+    const blockConfig = group?.blocks.find((b) => b.id === block.type);
+
+    if (!blockConfig) return null;
+
+    const Icon = blockConfig.icon;
 
     return (
       <div
         key={block.id}
+        ref={(el) => {
+          if (el) draggableRefs.current.set(block.id, el);
+        }}
         className={`absolute cursor-move p-4 rounded-lg border-2 shadow-lg min-w-[200px] ${
           isSelected ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-white"
         }`}
@@ -298,23 +457,13 @@ export default function ContentBuilderPage() {
           transform: "translate(-50%, -50%)",
         }}
         onClick={() => setSelectedBlock(block)}
-        onMouseDown={(e) => {
-          if (e.button === 0) {
-            // Left click
-            const rect = e.currentTarget.getBoundingClientRect();
-            setDragOffset({
-              x: e.clientX - rect.left,
-              y: e.clientY - rect.top,
-            });
-          }
-        }}
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded ${blockType.color}`}>
+            <div className={`p-2 rounded ${blockConfig.color}`}>
               <Icon className="h-4 w-4 text-white" />
             </div>
-            <span className="font-semibold text-sm">{blockType.name}</span>
+            <span className="font-semibold text-sm">{blockConfig.name}</span>
           </div>
           <div className="flex gap-1">
             <Button
@@ -322,7 +471,7 @@ export default function ContentBuilderPage() {
               variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
-                startConnection(block.id);
+                createConnection(block.id, "central");
               }}
               className="h-6 w-6 p-0"
             >
@@ -343,7 +492,7 @@ export default function ContentBuilderPage() {
         </div>
 
         <div className="space-y-2">
-          {blockType.fields.map((field) => (
+          {blockConfig.fields.map((field) => (
             <div key={field.id}>
               <Label className="text-xs font-medium">{field.label}</Label>
               {field.type === "textarea" ? (
@@ -405,30 +554,51 @@ export default function ContentBuilderPage() {
       </div>
 
       <div className="flex-1 flex">
-        {/* Sidebar mit Block-Typen */}
-        <div className="w-80 bg-white border-r border-gray-200 p-4">
+        {/* Sidebar mit Block-Gruppen */}
+        <div className="w-80 bg-white border-r border-gray-200 p-4 overflow-y-auto">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">Block-Typen</h3>
-            <div className="space-y-2">
-              {Object.entries(BLOCK_TYPES).map(([key, blockType]) => {
-                const Icon = blockType.icon;
+            <h3 className="text-lg font-semibold mb-4">Block-Gruppen</h3>
+            <div className="space-y-6">
+              {BLOCK_GROUPS.map((group) => {
+                const GroupIcon = group.icon;
                 return (
-                  <Button
-                    key={key}
-                    variant="outline"
-                    className="w-full justify-start h-auto p-3"
-                    onClick={() => addBlock(key)}
-                  >
-                    <div className={`p-2 rounded mr-3 ${blockType.color}`}>
-                      <Icon className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium">{blockType.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {blockType.fields.length} Felder
+                  <div key={group.name} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-2 rounded ${group.color}`}>
+                        <GroupIcon className="h-4 w-4 text-white" />
                       </div>
+                      <h4 className="font-medium text-gray-900">
+                        {group.name}
+                      </h4>
                     </div>
-                  </Button>
+                    <div className="space-y-2 pl-4">
+                      {group.blocks.map((blockConfig) => {
+                        const Icon = blockConfig.icon;
+                        return (
+                          <Button
+                            key={blockConfig.id}
+                            variant="outline"
+                            className="w-full justify-start h-auto p-3"
+                            onClick={() => addBlock(group.name, blockConfig.id)}
+                          >
+                            <div
+                              className={`p-2 rounded mr-3 ${blockConfig.color}`}
+                            >
+                              <Icon className="h-4 w-4 text-white" />
+                            </div>
+                            <div className="text-left">
+                              <div className="font-medium">
+                                {blockConfig.name}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {blockConfig.fields.length} Felder
+                              </div>
+                            </div>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -442,17 +612,21 @@ export default function ContentBuilderPage() {
             <div className="text-sm text-gray-600">
               <p className="font-medium mb-2">Anleitung:</p>
               <ul className="space-y-1 text-xs">
-                <li>• Ziehe Blöcke auf die Arbeitsfläche</li>
-                <li>• Verbinde Blöcke mit dem Link-Button</li>
-                <li>• Fülle die Felder aus</li>
-                <li>• Speichere deine Konfiguration</li>
+                <li>• Wähle eine Block-Gruppe</li>
+                <li>• Klicke auf Blöcke zum Hinzufügen</li>
+                <li>• Ziehe Blöcke mit der Maus</li>
+                <li>• Verbinde mit dem Link-Button</li>
+                <li>• Alle Blöcke verbinden mit dem Chat Brain</li>
               </ul>
             </div>
           </div>
         </div>
 
         {/* Hauptarbeitsbereich */}
-        <div className="flex-1 relative bg-gray-50 overflow-hidden">
+        <div
+          ref={canvasRef}
+          className="flex-1 relative bg-gray-50 overflow-hidden"
+        >
           <div className="absolute inset-0">
             {/* Grid-Hintergrund */}
             <div
@@ -531,32 +705,37 @@ export default function ContentBuilderPage() {
               <div>
                 <Label className="text-sm font-medium">Block-Typ</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <div
-                    className={`p-2 rounded ${
-                      BLOCK_TYPES[
-                        selectedBlock.type as keyof typeof BLOCK_TYPES
-                      ]?.color
-                    }`}
-                  >
-                    {(() => {
-                      const blockType =
-                        BLOCK_TYPES[
-                          selectedBlock.type as keyof typeof BLOCK_TYPES
-                        ];
-                      if (blockType?.icon) {
-                        const Icon = blockType.icon;
-                        return <Icon className="h-4 w-4 text-white" />;
+                  {selectedBlock.id === "central" ? (
+                    <>
+                      <div className={`p-2 rounded ${CENTRAL_OBJECT.color}`}>
+                        <CENTRAL_OBJECT.icon className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="font-medium">{CENTRAL_OBJECT.name}</span>
+                    </>
+                  ) : (
+                    (() => {
+                      const group = BLOCK_GROUPS.find(
+                        (g) => g.name === selectedBlock.group
+                      );
+                      const blockConfig = group?.blocks.find(
+                        (b) => b.id === selectedBlock.type
+                      );
+                      if (blockConfig) {
+                        const Icon = blockConfig.icon;
+                        return (
+                          <>
+                            <div className={`p-2 rounded ${blockConfig.color}`}>
+                              <Icon className="h-4 w-4 text-white" />
+                            </div>
+                            <span className="font-medium">
+                              {blockConfig.name}
+                            </span>
+                          </>
+                        );
                       }
                       return null;
-                    })()}
-                  </div>
-                  <span className="font-medium">
-                    {
-                      BLOCK_TYPES[
-                        selectedBlock.type as keyof typeof BLOCK_TYPES
-                      ]?.name
-                    }
-                  </span>
+                    })()
+                  )}
                 </div>
               </div>
 
@@ -587,9 +766,11 @@ export default function ContentBuilderPage() {
                         >
                           <Link className="h-3 w-3 text-blue-500" />
                           <span>
-                            {connectedBlock?.data.title ||
-                              connectedBlock?.data.name ||
-                              connectedBlock?.type}
+                            {connectedBlock?.id === "central"
+                              ? "Chat Brain"
+                              : connectedBlock?.data.title ||
+                                connectedBlock?.data.name ||
+                                connectedBlock?.type}
                           </span>
                         </div>
                       );
