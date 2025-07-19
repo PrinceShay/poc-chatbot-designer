@@ -40,26 +40,6 @@ import {
 } from "lucide-react";
 import { saveContentItems, getContentItems } from "@/lib/appwrite";
 
-// GSAP Import mit Error Handling
-let useGSAP: any = null;
-let Draggable: any = null;
-
-try {
-  const gsapReact = require("@gsap/react");
-  const gsap = require("gsap");
-  const gsapDraggable = require("gsap/Draggable");
-
-  useGSAP = gsapReact.useGSAP;
-  Draggable = gsapDraggable.Draggable;
-
-  // GSAP Plugins registrieren
-  if (typeof window !== "undefined") {
-    gsap.registerPlugin(Draggable);
-  }
-} catch (error) {
-  console.warn("GSAP konnte nicht geladen werden:", error);
-}
-
 // Block-Typen Definition mit Gruppierung
 const BLOCK_GROUPS = [
   {
@@ -208,46 +188,16 @@ export default function ContentBuilderPage() {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+  const [draggedBlock, setDraggedBlock] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [velocity, setVelocity] = useState({ x: 0, y: 0 });
+  const [lastPosition, setLastPosition] = useState<{
+    x: number;
+    y: number;
+    blockId?: string;
+  }>({ x: 0, y: 0 });
+  const [lastTime, setLastTime] = useState(0);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const draggableRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-
-  // GSAP Draggable initialisieren - nur wenn GSAP verfügbar ist
-  if (useGSAP && Draggable) {
-    useGSAP(
-      () => {
-        if (blocks.length > 0 && canvasRef.current) {
-          // Neue Draggables erstellen - GSAP kümmert sich automatisch um Cleanup
-          blocks.forEach((block) => {
-            const element = draggableRefs.current.get(block.id);
-            if (element) {
-              try {
-                Draggable.create(element, {
-                  type: "x,y",
-                  bounds: canvasRef.current,
-                  onDrag: function () {
-                    const x = this.x;
-                    const y = this.y;
-
-                    setBlocks((prev) =>
-                      prev.map((b) =>
-                        b.id === block.id ? { ...b, position: { x, y } } : b
-                      )
-                    );
-                  },
-                  onDragEnd: function () {
-                    // Optional: Speichern nach Drag
-                  },
-                });
-              } catch (error) {
-                console.warn("Fehler beim Erstellen des Draggable:", error);
-              }
-            }
-          });
-        }
-      },
-      { dependencies: [blocks.length], scope: canvasRef }
-    );
-  }
 
   // Lade gespeicherte Daten beim Start
   useEffect(() => {
@@ -267,6 +217,47 @@ export default function ContentBuilderPage() {
       ]);
     }
   }, []);
+
+  // Inertia Animation
+  useEffect(() => {
+    if (
+      !draggedBlock &&
+      (Math.abs(velocity.x) > 0.1 || Math.abs(velocity.y) > 0.1)
+    ) {
+      const animate = () => {
+        setBlocks((prev) =>
+          prev.map((block) => {
+            if (block.id === lastPosition.blockId) {
+              const newX = block.position.x + velocity.x;
+              const newY = block.position.y + velocity.y;
+
+              // Grenzen prüfen
+              const canvasRect = canvasRef.current?.getBoundingClientRect();
+              if (canvasRect) {
+                const maxX = canvasRect.width - 50;
+                const maxY = canvasRect.height - 50;
+                const clampedX = Math.max(25, Math.min(newX, maxX));
+                const clampedY = Math.max(25, Math.min(newY, maxY));
+
+                // Velocity reduzieren bei Grenzen
+                const newVelocityX = clampedX !== newX ? 0 : velocity.x * 0.95;
+                const newVelocityY = clampedY !== newY ? 0 : velocity.y * 0.95;
+
+                setVelocity({ x: newVelocityX, y: newVelocityY });
+
+                return { ...block, position: { x: clampedX, y: clampedY } };
+              }
+              return block;
+            }
+            return block;
+          })
+        );
+      };
+
+      const interval = setInterval(animate, 16); // 60fps
+      return () => clearInterval(interval);
+    }
+  }, [draggedBlock, velocity, lastPosition]);
 
   const loadContentItems = async () => {
     try {
@@ -347,8 +338,102 @@ export default function ContentBuilderPage() {
     }
   };
 
+  // Drag & Drop Funktionen mit Inertia
+  const handleMouseDown = (e: React.MouseEvent, blockId: string) => {
+    if (e.button === 0) {
+      // Left click only
+      e.preventDefault();
+      e.stopPropagation();
+
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (canvasRect) {
+        const block = blocks.find((b) => b.id === blockId);
+        if (block) {
+          setDragOffset({
+            x: e.clientX - canvasRect.left - block.position.x,
+            y: e.clientY - canvasRect.top - block.position.y,
+          });
+          setDraggedBlock(blockId);
+          setVelocity({ x: 0, y: 0 });
+          setLastPosition({
+            x: block.position.x,
+            y: block.position.y,
+            blockId,
+          });
+          setLastTime(Date.now());
+        }
+      }
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (draggedBlock && canvasRef.current) {
+      e.preventDefault();
+
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - canvasRect.left - dragOffset.x;
+      const y = e.clientY - canvasRect.top - dragOffset.y;
+
+      // Grenzen setzen (etwas lockerer)
+      const maxX = canvasRect.width - 50;
+      const maxY = canvasRect.height - 50;
+      const clampedX = Math.max(25, Math.min(x, maxX));
+      const clampedY = Math.max(25, Math.min(y, maxY));
+
+      // Velocity berechnen
+      const currentTime = Date.now();
+      const deltaTime = currentTime - lastTime;
+      if (deltaTime > 0) {
+        const newVelocityX = ((clampedX - lastPosition.x) / deltaTime) * 16; // 60fps
+        const newVelocityY = ((clampedY - lastPosition.y) / deltaTime) * 16;
+        setVelocity({ x: newVelocityX, y: newVelocityY });
+      }
+
+      setLastPosition({ x: clampedX, y: clampedY, blockId: draggedBlock });
+      setLastTime(currentTime);
+
+      setBlocks((prev) =>
+        prev.map((block) =>
+          block.id === draggedBlock
+            ? { ...block, position: { x: clampedX, y: clampedY } }
+            : block
+        )
+      );
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDraggedBlock(null);
+  };
+
+  // Verbindungen erstellen - verbesserte Logik
   const createConnection = (fromBlockId: string, toBlockId: string) => {
     if (fromBlockId === toBlockId) return;
+
+    // Prüfe ob Verbindung bereits existiert
+    const existingConnection = connections.find(
+      (conn) =>
+        (conn.from === fromBlockId && conn.to === toBlockId) ||
+        (conn.from === toBlockId && conn.to === fromBlockId)
+    );
+
+    if (existingConnection) {
+      // Verbindung entfernen wenn sie bereits existiert
+      setConnections((prev) =>
+        prev.filter((conn) => conn.id !== existingConnection.id)
+      );
+
+      // Update block connections
+      setBlocks((prev) =>
+        prev.map((block) => ({
+          ...block,
+          connections: block.connections.filter(
+            (connId) => connId !== existingConnection.id
+          ),
+        }))
+      );
+      return;
+    }
 
     const connectionId = `conn-${Date.now()}`;
     const newConnection: Connection = {
@@ -363,13 +448,7 @@ export default function ContentBuilderPage() {
     // Update block connections
     setBlocks((prev) =>
       prev.map((block) => {
-        if (block.id === fromBlockId) {
-          return {
-            ...block,
-            connections: [...block.connections, connectionId],
-          };
-        }
-        if (block.id === toBlockId) {
+        if (block.id === fromBlockId || block.id === toBlockId) {
           return {
             ...block,
             connections: [...block.connections, connectionId],
@@ -380,30 +459,45 @@ export default function ContentBuilderPage() {
     );
   };
 
+  // Verbindung löschen
+  const deleteConnection = (connectionId: string) => {
+    setConnections((prev) => prev.filter((conn) => conn.id !== connectionId));
+
+    // Update block connections
+    setBlocks((prev) =>
+      prev.map((block) => ({
+        ...block,
+        connections: block.connections.filter(
+          (connId) => connId !== connectionId
+        ),
+      }))
+    );
+  };
+
   const renderBlock = (block: Block) => {
     const isCentral = block.id === "central";
     const isSelected = selectedBlock?.id === block.id;
+    const isDragging = draggedBlock === block.id;
 
     if (isCentral) {
       const Icon = CENTRAL_OBJECT.icon;
       return (
         <div
           key={block.id}
-          ref={(el) => {
-            if (el) draggableRefs.current.set(block.id, el);
-          }}
           className={`absolute cursor-move p-6 rounded-lg border-2 shadow-lg ${
             isSelected
               ? "border-blue-500 bg-blue-50"
               : "border-gray-300 bg-white"
-          }`}
+          } ${isDragging ? "z-50 shadow-xl" : ""}`}
           style={{
             left: block.position.x,
             top: block.position.y,
             transform: "translate(-50%, -50%)",
             minWidth: "200px",
+            userSelect: "none",
           }}
           onClick={() => setSelectedBlock(block)}
+          onMouseDown={(e) => handleMouseDown(e, block.id)}
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className={`p-3 rounded ${CENTRAL_OBJECT.color}`}>
@@ -445,18 +539,17 @@ export default function ContentBuilderPage() {
     return (
       <div
         key={block.id}
-        ref={(el) => {
-          if (el) draggableRefs.current.set(block.id, el);
-        }}
         className={`absolute cursor-move p-4 rounded-lg border-2 shadow-lg min-w-[200px] ${
           isSelected ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-white"
-        }`}
+        } ${isDragging ? "z-50 shadow-xl" : ""}`}
         style={{
           left: block.position.x,
           top: block.position.y,
           transform: "translate(-50%, -50%)",
+          userSelect: "none",
         }}
         onClick={() => setSelectedBlock(block)}
+        onMouseDown={(e) => handleMouseDown(e, block.id)}
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -626,6 +719,9 @@ export default function ContentBuilderPage() {
         <div
           ref={canvasRef}
           className="flex-1 relative bg-gray-50 overflow-hidden"
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
           <div className="absolute inset-0">
             {/* Grid-Hintergrund */}
@@ -656,17 +752,39 @@ export default function ContentBuilderPage() {
                 const toX = toBlock.position.x;
                 const toY = toBlock.position.y;
 
+                // Berechne Pfeil-Position (etwas vom Block entfernt)
+                const dx = toX - fromX;
+                const dy = toY - fromY;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const unitX = dx / length;
+                const unitY = dy / length;
+
+                const arrowLength = 20;
+                const arrowX = toX - unitX * arrowLength;
+                const arrowY = toY - unitY * arrowLength;
+
                 return (
-                  <line
-                    key={connection.id}
-                    x1={fromX}
-                    y1={fromY}
-                    x2={toX}
-                    y2={toY}
-                    stroke="#3b82f6"
-                    strokeWidth="2"
-                    markerEnd="url(#arrowhead)"
-                  />
+                  <g key={connection.id}>
+                    {/* Hauptlinie */}
+                    <line
+                      x1={fromX}
+                      y1={fromY}
+                      x2={arrowX}
+                      y2={arrowY}
+                      stroke="#3b82f6"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                    {/* Pfeil */}
+                    <polygon
+                      points={`${arrowX - unitY * 8},${arrowY + unitX * 8} ${
+                        arrowX + unitX * 12
+                      },${arrowY + unitY * 12} ${arrowX + unitY * 8},${
+                        arrowY - unitX * 8
+                      }`}
+                      fill="#3b82f6"
+                    />
+                  </g>
                 );
               })}
             </svg>
